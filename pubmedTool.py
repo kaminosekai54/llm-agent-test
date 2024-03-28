@@ -138,7 +138,8 @@ class PubMedArticleSearchTool(BaseTool):
 
         articles = search_pubmed(keywords_list)
         df = pd.DataFrame.from_dict(articles).drop_duplicates()
-        df.to_csv("res.csv", sep=",", index=False)
+        # df.to_csv("res.csv", sep=",", index=False)
+        # return df
         return df
 
 # Example usage of the tool is outside the scope of this script but would involve creating an instance of PubMedArticleSearchTool and calling its _run method with appropriate arguments.

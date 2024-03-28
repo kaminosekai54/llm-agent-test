@@ -10,21 +10,22 @@ os.environ["SERPER_API_KEY"] = "e486cce5438cd0aa67f552e97c91b3ca853f4606" # serp
 # You can choose to use a local model through Ollama for example. See https://docs.crewai.com/how-to/LLM-Connections/ for more information.
 
 os.environ["OPENAI_API_BASE"] = 'http://localhost:11434/v1'
-os.environ["OPENAI_MODEL_NAME"] ='mistral'  # Adjust based on available model
-os.environ["OPENAI_API_KEY"] ='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'
+os.environ["OPENAI_MODEL_NAME"] ='mistral'  # Adjust qbased on available model
+# os.environ["OPENAI_API_KEY"] ='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'
+os.environ["OPENAI_API_KEY"] =''
 
-os.environ["AZURE_OPENAI_KEY"]="ccdcc67fa8f9415aba782b04fa8650de"
+# os.environ["AZURE_OPENAI_KEY"]="ccdcc67fa8f9415aba782b04fa8650de"
 
 search_tool = SerperDevTool()
 pubmedTool = PubMedArticleSearchTool()
 
 # Define your agents with roles and goals
 researcher = Agent(
-  role='Senior Research Analyst',
-  goal='make a selection and summary of article of cuttingedge discovery in cancer treatment',
+  role='Expert data collector',
+  goal='make a selection of article of cuttingedge discovery in cancer treatment',
   backstory="""You work as a cancer researcher in curie institute.
   Your expertise lies in identifying articles presenting innovative and new cancer treatments.
-  You have a knack for dissecting complex data and presenting actionable insights.""",
+  You are an expert in choosing appropriate keywords and identifying relevant article for any topic.""",
   verbose=True,
   allow_delegation=False,
   tools=[pubmedTool],
@@ -33,9 +34,9 @@ researcher = Agent(
 task1 = Task(
   description="""Conduct a comprehensive state of the art report.
   Using a list of apropriate keywords to find the most relevant articles,
-  Identify key trends, breakthrough technologies, and potential industry impacts.
+  Go through articles and select the most relevant and apropriate ones, combine all search result to create a csv file called resultats.csv.
   """,
-  expected_output="Full analysis report in bullet points and csv file of the selected articles",
+  expected_output="csv file of the selected articles metadata",
   agent=researcher
 )
 
