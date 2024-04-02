@@ -8,11 +8,11 @@ class PubMedArticleSearchTool(BaseTool):
     name: str = "PubMed Article Search"
     description: str = "Searches PubMed for articles matching given keywords"
 
-    def _run(self, keywords: str) -> list:
+    def _run(self, keywords: str) -> str:
         """
         Executes the PubMed article search with in the 5 last year using the provided list of key words.
         :param keywords: One string representing keywords, separated by a comma.
-        :return: List of dictionnary representing search results.
+        :return: Json string representing search results that can be written as csv.
         """
         keywords_list = keywords
         if isinstance(keywords, str) : keywords_list = keywords.split(",")
@@ -137,9 +137,8 @@ class PubMedArticleSearchTool(BaseTool):
 
 
         articles = search_pubmed(keywords_list)
-        df = pd.DataFrame.from_dict(articles).drop_duplicates()
-        # df.to_csv("res.csv", sep=",", index=False)
-        # return df
+        df = pd.DataFrame.from_dict(articles).drop_duplicates().to_json()
+        print(type(df))
         return df
 
 # Example usage of the tool is outside the scope of this script but would involve creating an instance of PubMedArticleSearchTool and calling its _run method with appropriate arguments.
