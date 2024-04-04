@@ -9,6 +9,7 @@ import warnings
 warnings.filterwarnings('ignore')
 load_dotenv()
 
+
 class SotaReviewCrew:
     def __init__(self, topic):
         self.topic = topic
@@ -18,33 +19,51 @@ class SotaReviewCrew:
         tasks = sotaTasks()
 
         head_manager_agent = agents.headManagerAgent()
-        pubmed_data_collector_agent = agents.pubmedDataCollectorAgent()
+        pubmed_data_collector_agent = agents.pubmedDataCollectorAgent(topic)
+        pubmed_data_reviewer_agent = agents.pubmedDataReviewerAgent(topic)
 
-        get_pubmed_data_task = tasks.getPubMedData(pubmed_data_collector_agent)  # Modified to pass topic
-        apply_first_filter_task = tasks.applyFirstFilter(pubmed_data_collector_agent)  # Assuming this task also needs topic, you can modify it similarly
+        
+
+        # get_pubmed_data_task = tasks.getPubMedData(pubmed_data_collector_agent)  # Modified to pass topic
+        get_pubmed_data_task = tasks.test(pubmed_data_collector_agent)  # Modified to pass topic
+
+        # save_pubmed_data_task = tasks.savePubMedData(pubmed_data_collector_agent, get_pubmed_data_task.output)  # Modified to pass topic
+        # print("task 1:")
+        # print(get_pubmed_data_task )
+
+        # apply_first_filter_task = tasks.applyFirstFilter(agent=pubmed_data_reviewer_agent, topic=topic, context=[get_pubmed_data_task]) 
 
         crew = Crew(
             agents=[
                 head_manager_agent,
                 pubmed_data_collector_agent,
+                # pubmed_data_reviewer_agent ,
             ],
             tasks=[
                 get_pubmed_data_task,
-                apply_first_filter_task,
+                # save_pubmed_data_task,
+                # apply_first_filter_task,
             ],
-            verbose=True
+            verbose=True,
+            # process="hierarchical",
+            # manager_llm = head_manager_agent,
         )
 
         result = crew.kickoff()
+        with open("output.txt", "w") as f : f.write(str(get_pubmed_data_task.output.exported_output))
+        with open("output2.txt", "w") as f : f.write(str(get_pubmed_data_task.output.raw_output))
+
         return result
 
 if __name__ == "__main__":
     print("## Welcome to State-of-the-Art Review Crew")
     print('-------------------------------')
-    topic = input(
-        dedent("""
-            What is the topic for the state-of-the-art review?
-        """))
+    topic = "cancert treatment"
+
+    # topic = input(
+        # dedent("""
+            # What is the topic for the state-of-the-art review?
+        # """))
     
     sota_review_crew = SotaReviewCrew(topic)
     result = sota_review_crew.run()

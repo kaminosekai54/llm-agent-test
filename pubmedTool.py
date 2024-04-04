@@ -4,6 +4,8 @@ from Bio import Entrez
 import itertools
 import xmltodict
 import pandas as pd
+import os
+
 class PubMedArticleSearchTool(BaseTool):
     name: str = "PubMed Article Search"
     description: str = "Searches PubMed for articles matching given keywords"
@@ -12,11 +14,11 @@ class PubMedArticleSearchTool(BaseTool):
         """
         Executes the PubMed article search with in the 5 last year using the provided list of key words.
         :param keywords: One string representing keywords, separated by a comma.
-        :return: Json string representing search results that can be written as csv.
+        :return: CSV file representing search results  that should be use as output by any task or agent.
         """
         keywords_list = keywords
         if isinstance(keywords, str) : keywords_list = keywords.split(",")
-        print(type(keywords_list))
+        # print(type(keywords_list))
         Entrez.email = "Alexis.CULPIN@efor-group.com"  # Set your email
 
         def generate_keyword_combinations(keywords):
@@ -41,7 +43,7 @@ class PubMedArticleSearchTool(BaseTool):
                 query = f"({combo})" 
                 # query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
 
-                handle = Entrez.esearch(db="pubmed", term=query, retmax=20)
+                handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
                 record = Entrez.read(handle)
                 id_list = record["IdList"]
 
@@ -137,9 +139,10 @@ class PubMedArticleSearchTool(BaseTool):
 
 
         articles = search_pubmed(keywords_list)
-        df = pd.DataFrame.from_dict(articles).drop_duplicates().to_json()
-        print(type(df))
-        return df
+        df = pd.DataFrame.from_dict(articles).drop_duplicates()
+        if os.path.isfile("./pubMedResults.csv"): df=pd.concat([pd.read_csv("pubMedResults.csv"), df], ignore_index=True).drop_duplicates()
+        df.to_csv("./pubMedResults.csv", sep=",", index=False)
+        return df.to_json()
 
 # Example usage of the tool is outside the scope of this script but would involve creating an instance of PubMedArticleSearchTool and calling its _run method with appropriate arguments.
 

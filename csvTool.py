@@ -4,7 +4,7 @@ import os
 import glob
 
 class csvTool(BaseTool):
-    name: str = "Ultimate CSV Manipulation Tool"
+    name: str = "CSV tool"
     description: str = (
         "A comprehensive tool for extensive manipulation of CSV files, "
         "supporting operations such as reading, writing, modifying, merging, "
@@ -30,8 +30,11 @@ class csvTool(BaseTool):
         return df.to_json()
 
     def write_csv(self, df_json, file_path):
+        print(f"file path : {file_path}")
+        print(f"data : \n {df_json}")
+
         df = pd.read_json(df_json)
-        df.to_csv(file_path, index=False)
+        df.to_csv("./"+file_path, index=False)
         return "CSV file written successfully"
 
     def save_csv(self, df_json, file_path):

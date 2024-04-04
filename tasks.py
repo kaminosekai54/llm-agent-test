@@ -1,5 +1,8 @@
 from crewai import Task
 from textwrap import dedent
+from pubmedTool import PubMedArticleSearchTool
+pubmedTool = PubMedArticleSearchTool()
+
 
 
 class sotaTasks:
@@ -10,40 +13,91 @@ class sotaTasks:
         return Task(
             description=dedent(
                 f"""
-            Collect the most relevant articles to conduct a proper state of the art review.
-            
+            Collect the most relevant articles to conduct a complete state of the art review.
+            All the differents keywords will be combined during the search.
+            So, give a particular attention to  use the apropriate keywords and date range.
+            Save the results in a csv file called pubMedRes.csv or concatenate the results to the existing csv file
             {self.__tip_section()}
-
-            Make sure to use the apropriate keywords and date range.
-            The output should be a csv file including the following informations :
-            ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
         """
             ),
             expected_output = dedent(
                 f"""
-A csv file containing the following articles meta data : 
+                Using the output of the pubmed tool, representing the search results
+                Write a csv file called pubMedResults.csv containing the following articles meta data : 
             ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
+            No report are expected,
+            No comments are expected
+            Only the csv file of the results.
                 """),
 
             agent=agent,
+            output_file= "./res.txt",
+
         )
 
-    def applyFirstFilter(self, agent):
+    def savePubMedData(self, agent, data):
         return Task(
             description=dedent(
                 f"""
-            Using the tittle and abstract collected in the pubmed data collection task,
-            Ensure that they are in the desired range of publication date, they are either in english or french and relevant to the topic asked.
-            Clean the original csv and create a new csv file for the removed articles,adding a column for the reason of exclusion.
-
-                                       
+                Using the following data :
+                {data}
+            Save the results of the pubmed search results in a csv file called pubMedResults.csv.
+            If the file already exist, concat the new data to the existing file and save it.
             {self.__tip_section()}
-
         """
             ),
             expected_output = dedent(
                 f"""
-2 csv file, the modified csv from the first data collection task, with the none selected article removed and a second csv file containing the none selected meta data of the none selected articles, with an extra column explaining why they are not selected
+Only a csv file called pubMedResults.csv containing the following articles meta data : 
+            ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
                 """),
+
             agent=agent,
         )
+
+
+    def applyFirstFilter(self, agent, topic, context):
+        return Task(
+            description=dedent(
+                f"""
+                Parse a csv file line by line to ensure the validity of data.
+                If the data are not respecting the following exclusion criteria, remove it from the original file and add it to another one, adding a column for the exclusion reason.
+            
+                Base your choice on the tittle and abstract values.
+
+                Exclusion criteria :
+                - no abstract.
+                - article not published with in the past 5 years.
+                - article not in english or french.
+                - tittle or abstract not relevant for a state of the art review on {topic}.
+            {self.__tip_section()}
+        """
+            ),
+            expected_output = dedent(
+                f"""
+2 csv file are expected:
+the modified original csv file, keeping only the selected articles. It should be the same as the original file, without the excluded articles.
+a second csv file containing the excluded articles. It should have the same columns as the original file with an extra column explaining why it been excluded.
+                """),
+            agent=agent,
+            context=context 
+        )
+    
+    def test(self, agent):
+        return Task(
+            description=dedent(
+                f"""
+            Search PubMed for specific articles and return results as JSON.
+            {self.__tip_section()}
+        """
+            ),
+            expected_output = dedent(
+                f"""
+            JSON file with search results.
+                """),
+
+            agent=agent,
+            tools=[pubmedTool],
+            output_file= "./res.txt",
+        )
+
