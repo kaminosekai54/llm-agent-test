@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime, timedelta
 from crewai_tools import BaseTool
 from Bio import Entrez
@@ -122,15 +124,15 @@ class PubMedArticleSearchTool(BaseTool):
                 open_access_status = "Yes" if pmc_id else "No"
 
                 return {
-                    'Article ID': article_id,
-                    'Title': title,
-                    'Journal': journal,
-                    'Authors': ", ".join(authors),
-                    'Publication Date': pub_date,
-                    'Article Type': publication_type,
-                    'DOI': doi,
-                    'Abstract': abstract,
-                    'Open Access': open_access_status,
+                    'Article ID': article_id.encode('utf8'),
+                    'Title': title.encode('utf8'),
+                    'Journal': journal.encode('utf8'),
+                    'Authors': ", ".join(authors).encode('utf8'),
+                    'Publication Date': pub_date.encode('utf8'),
+                    'Article Type': publication_type.encode('utf8'),
+                    'DOI': doi.encode('utf8'),
+                    'Abstract': abstract.encode('utf8'),
+                    'Open Access': open_access_status.encode('utf8'),
                     'Full Text Available': "Yes" if pmc_id else "No"
                 }
             except Exception as e:

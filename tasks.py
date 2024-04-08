@@ -75,9 +75,9 @@ Only a csv file called pubMedResults.csv containing the following articles meta 
             ),
             expected_output = dedent(
                 f"""
-2 csv file are expected:
-the modified original csv file, keeping only the selected articles. It should be the same as the original file, without the excluded articles.
-a second csv file containing the excluded articles. It should have the same columns as the original file with an extra column explaining why it been excluded.
+2 list in json format :
+The first one correspond to the articles id of the selected articles.
+The second one correspond to the list of the none selected articles and the reason of the none selection.
                 """),
             agent=agent,
             context=context 
@@ -101,3 +101,41 @@ a second csv file containing the excluded articles. It should have the same colu
             output_file= "./res.txt",
         )
 
+
+
+    def applyFirstFilter2(self, agent, topic, data):
+        return Task(
+            description=dedent(
+                f"""
+                Given the provided data in json format ensure the validity of data.
+                For all data entree check If the data are not respecting the following exclusion criteria, remove it from the original file and add it to another one, adding a column for the exclusion reason.
+            
+                Base your choice on the tittle and abstract values.
+
+                Exclusion criteria :
+                - no abstract.
+                - article not published with in the past 5 years.
+                - article not in english or french.
+                - tittle or abstract not relevant for a state of the art review on {topic}.
+            {self.__tip_section()}
+
+data: 
+{data}
+        """
+            ),
+            expected_output = dedent(
+                """
+A json file containing the id of selected article, the id of none selected article and the reason why.
+For example :
+[
+    {"selectedArticle":["1", "2",]},
+    {"notSelectedArticle":[ 
+     {"id":"3", "reason":"wrong langage"}, {"id":"6", "reason":"not related to the topic"}
+    ]
+    }
+]
+
+                """),
+            agent=agent,
+            output_file= "./res.txt",
+        )
