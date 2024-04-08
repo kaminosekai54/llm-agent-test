@@ -1,3 +1,4 @@
+import streamlit as st
 import os
 from textwrap import dedent
 from crewai import Agent
@@ -6,6 +7,7 @@ from pubmedTool import PubMedArticleSearchTool
 from crewai_tools import SerperDevTool
 from csvTool import csvTool
 from crewai_tools import CSVSearchTool
+from langchain_openai import AzureChatOpenAI
 
 # from langchain_community.tools.pubmed.tool import PubmedQueryRun
 # tool = PubmedQueryRun()
@@ -19,8 +21,57 @@ pubmedTool = PubMedArticleSearchTool()
 # pubmedTool = PubmedQueryRun()
 # csvTool = csvTool()
 # retool = CSVSearchTool(csv='pubMedResults.csv ')
-
+# os.environ["AZURE_OPENAI_VERSION"] ="2024-02-15-preview"  
+# os.environ["OPENAI_API_VERSION"] ="2024-02-15-preview"    
+ 
+# os.environ["AZURE_OPENAI_DEPLOYMENT"]="gpt-4-turbo"
+# os.environ["AZURE_OPENAI_ENDPOINT"]="https://eforia-uk.openai.azure.com/"
+# os.environ["AZURE_OPENAI_KEY"]="ccdcc67fa8f9415aba782b04fa8650de"
+ 
+# llm_model = AzureChatOpenAI(
+    # openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    # azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+# )
 llm_model = Ollama(model="mistral")
+
+def streamlit_callback(step_output):
+    # This function will be called after each step of the agent's execution
+    st.markdown("---")
+    for step in step_output:
+        if isinstance(step, tuple) and len(step) == 2:
+            action, observation = step
+            if isinstance(action, dict) and "tool" in action and "tool_input" in action and "log" in action:
+                st.markdown(f"# Action")
+                st.markdown(f"**Tool:** {action['tool']}")
+                st.markdown(f"**Tool Input** {action['tool_input']}")
+                st.markdown(f"**Log:** {action['log']}")
+                st.markdown(f"**Action:** {action['Action']}")
+                st.markdown(
+                    f"**Action Input:** ```json\n{action['tool_input']}\n```")
+            elif isinstance(action, str):
+                st.markdown(f"**Action:** {action}")
+            else:
+                st.markdown(f"**Action:** {str(action)}")
+
+            st.markdown(f"**Observation**")
+            if isinstance(observation, str):
+                observation_lines = observation.split('\n')
+                for line in observation_lines:
+                    if line.startswith('Title: '):
+                        st.markdown(f"**Title:** {line[7:]}")
+                    elif line.startswith('Link: '):
+                        st.markdown(f"**Link:** {line[6:]}")
+                    elif line.startswith('Snippet: '):
+                        st.markdown(f"**Snippet:** {line[9:]}")
+                    elif line.startswith('-'):
+                        st.markdown(line)
+                    else:
+                        st.markdown(line)
+            else:
+                st.markdown(str(observation))
+        else:
+            st.markdown(step)
 
 class sotaAgents():
     def headManagerAgent(self):
@@ -36,7 +87,8 @@ class sotaAgents():
                              allow_delegation=True,
                              verbose=True,
                                 tools=[pubmedTool],
-                             llm=llm_model
+                             llm=llm_model,
+                             step_callback=streamlit_callback,
                              )
     
 
@@ -57,7 +109,8 @@ class sotaAgents():
 
             verbose=True,
 
-            llm=llm_model
+            llm=llm_model,
+            step_callback=streamlit_callback,
             )
 
     def pubmedDataReviewerAgent(self, topic):
@@ -74,5 +127,6 @@ class sotaAgents():
 
             allow_delegation=False,
             verbose=True,
-            llm=llm_model
+            llm=llm_model,
+            step_callback=streamlit_callback,
             )
