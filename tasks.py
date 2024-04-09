@@ -22,8 +22,7 @@ class sotaTasks:
             ),
             expected_output = dedent(
                 f"""
-                Using the output of the pubmed tool, representing the search results
-                Write a csv file called pubMedResults.csv containing the following articles meta data : 
+a csv file called pubMedResults.csv containing the following articles meta data : 
             ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
             No report are expected,
             No comments are expected

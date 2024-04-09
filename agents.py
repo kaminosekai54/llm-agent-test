@@ -7,7 +7,8 @@ from pubmedTool import PubMedArticleSearchTool
 from crewai_tools import SerperDevTool
 from csvTool import csvTool
 from crewai_tools import CSVSearchTool
-from langchain_openai import AzureChatOpenAI
+# from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 
 # from langchain_community.tools.pubmed.tool import PubmedQueryRun
 # tool = PubmedQueryRun()
@@ -22,7 +23,7 @@ pubmedTool = PubMedArticleSearchTool()
 # csvTool = csvTool()
 # retool = CSVSearchTool(csv='pubMedResults.csv ')
 # os.environ["AZURE_OPENAI_VERSION"] ="2024-02-15-preview"  
-# os.environ["OPENAI_API_VERSION"] ="2024-02-15-preview"    
+os.environ["GROQ_API_KEY"] ="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"    
  
 # os.environ["AZURE_OPENAI_DEPLOYMENT"]="gpt-4-turbo"
 # os.environ["AZURE_OPENAI_ENDPOINT"]="https://eforia-uk.openai.azure.com/"
@@ -34,6 +35,12 @@ pubmedTool = PubMedArticleSearchTool()
     # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
 # )
 llm_model = Ollama(model="mistral")
+# llm_model = ChatOpenAI(
+    # openai_api_base="https://api.groq.com/openai/v1", # https://api.openai.com/v1 or https://api.groq.com/openai/v1 
+    # openai_api_key=os.getenv("GROQ_API_KEY"), # os.getenv("OPENAI_API_KEY") or os.getenv("GROQ_API_KEY")
+    # model_name="gemma-7b-it" #  gpt-4-turbo-preview or mixtral-8x7b-32768 
+# )
+
 
 def streamlit_callback(step_output):
     # This function will be called after each step of the agent's execution
@@ -98,7 +105,7 @@ class sotaAgents():
             goal=f"Choose the appropriate keywords to perform a state of the art review of {topic}",
             backstory=dedent(f"""
                                 You are an expert in the {topic}
-                                You are the best at collecting data on pubmed. 
+                                You are the best at collecting scientific articles on pubmed. 
                                 You always find the most relevant keywords and identify the most fitting articles. You always provide a well-formatted output, respecting the imposed requirements.You always give a well formated output, respecting the imposed requieredment.
                                 You always make sure that your data are well formatted.
                              You only accept articles in french or english and with in a specific date range, if not specified, with in the last 5 years.

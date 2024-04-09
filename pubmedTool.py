@@ -42,8 +42,8 @@ class PubMedArticleSearchTool(BaseTool):
             print(combinations )
 
             for combo in combinations:
-                query = f"({combo})" 
-                # query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
+                # query = f"({combo})" 
+                query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
 
                 handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
                 record = Entrez.read(handle)
@@ -142,12 +142,6 @@ class PubMedArticleSearchTool(BaseTool):
 
         articles = search_pubmed(keywords_list)
         df = pd.DataFrame.from_dict(articles).drop_duplicates()
-        if os.path.isfile("./pubMedResults.csv"): df=pd.concat([pd.read_csv("pubMedResults.csv"), df], ignore_index=True).drop_duplicates()
+        # if os.path.isfile("./pubMedResults.csv"): df=pd.concat([pd.read_csv("pubMedResults.csv"), df], ignore_index=True).drop_duplicates()
         df.to_csv("./pubMedResults.csv", sep=",", index=False)
         return df.to_json()
-
-# Example usage of the tool is outside the scope of this script but would involve creating an instance of PubMedArticleSearchTool and calling its _run method with appropriate arguments.
-
-# search = PubMedArticleSearchTool()._run(["cancer treatment", "discovery", "advencement"])
-# print("finish")
-# print(len(search))
