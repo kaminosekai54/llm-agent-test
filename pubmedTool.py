@@ -42,10 +42,10 @@ class PubMedArticleSearchTool(BaseTool):
             print(combinations )
 
             for combo in combinations:
-                # query = f"({combo})" 
-                query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
+                query = f"({combo})" 
+                # query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
 
-                handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
+                handle = Entrez.esearch(db="pubmed", term=query, retmax=15)
                 record = Entrez.read(handle)
                 id_list = record["IdList"]
 
@@ -143,5 +143,5 @@ class PubMedArticleSearchTool(BaseTool):
         articles = search_pubmed(keywords_list)
         df = pd.DataFrame.from_dict(articles).drop_duplicates()
         # if os.path.isfile("./pubMedResults.csv"): df=pd.concat([pd.read_csv("pubMedResults.csv"), df], ignore_index=True).drop_duplicates()
-        df.to_csv("./pubMedResults.csv", sep=",", index=False)
-        return df.to_json()
+        df.to_csv("./pubMedResults.csv", sep=",", index=False, encoding="utf8")
+        return df   

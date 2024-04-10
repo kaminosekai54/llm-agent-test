@@ -24,13 +24,15 @@ def main():
         with st.spinner("🤖 **Agents at work...**"):
                 sota_review_crew = SotaReviewCrew(topic)
                 results = sota_review_crew.run()
+                print(results)
+
 
         st.success("Review Completed!")
 
         if os.path.isfile("pubMedResults.csv"):
-            result = pd.read_csv("pubMedResults.csv")
+            result = pd.read_csv("pubMedResults.csv", encoding="utf8")
             st.header("Articles found :")
-            st.dataframe(result)
+            st.dataframe(result, hide_index=True)
         else:
             st.header("Seams an error occured")
 
