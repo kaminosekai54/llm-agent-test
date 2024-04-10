@@ -2,44 +2,20 @@ import streamlit as st
 import os
 from textwrap import dedent
 from crewai import Agent
-from langchain_community.llms import Ollama
 from pubmedTool import PubMedArticleSearchTool
-from crewai_tools import SerperDevTool
-from csvTool import csvTool
 from crewai_tools import CSVSearchTool
-# from langchain_openai import AzureChatOpenAI
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
+from dotenv import load_dotenv
 
-# from langchain_community.tools.pubmed.tool import PubmedQueryRun
-# tool = PubmedQueryRun()
-os.environ["SERPER_API_KEY"] = "e486cce5438cd0aa67f552e97c91b3ca853f4606" # serper.dev API key
 #  env variables    
-os.environ["OPENAI_API_BASE"] = 'http://localhost:11434/v1'
-os.environ["OPENAI_API_KEY"] =''
-
-searchTool= SerperDevTool()
+load_dotenv()
+ 
+llm_model = AzureChatOpenAI(
+    openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+)
 pubmedTool = PubMedArticleSearchTool()
-# pubmedTool = PubmedQueryRun()
-# csvTool = csvTool()
-# retool = CSVSearchTool(csv='pubMedResults.csv ')
-# os.environ["AZURE_OPENAI_VERSION"] ="2024-02-15-preview"  
-os.environ["GROQ_API_KEY"] ="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"    
- 
-# os.environ["AZURE_OPENAI_DEPLOYMENT"]="gpt-4-turbo"
-# os.environ["AZURE_OPENAI_ENDPOINT"]="https://eforia-uk.openai.azure.com/"
-# os.environ["AZURE_OPENAI_KEY"]="ccdcc67fa8f9415aba782b04fa8650de"
- 
-# llm_model = AzureChatOpenAI(
-    # openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-    # azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
-    # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-# )
-llm_model = Ollama(model="mistral")
-# llm_model = ChatOpenAI(
-    # openai_api_base="https://api.groq.com/openai/v1", # https://api.openai.com/v1 or https://api.groq.com/openai/v1 
-    # openai_api_key=os.getenv("GROQ_API_KEY"), # os.getenv("OPENAI_API_KEY") or os.getenv("GROQ_API_KEY")
-    # model_name="gemma-7b-it" #  gpt-4-turbo-preview or mixtral-8x7b-32768 
-# )
 
 
 def streamlit_callback(step_output):
@@ -95,7 +71,7 @@ class sotaAgents():
                              verbose=True,
                                 tools=[pubmedTool],
                              llm=llm_model,
-                             step_callback=streamlit_callback,
+                            #  step_callback=streamlit_callback,
                              )
     
 
@@ -117,7 +93,7 @@ class sotaAgents():
             verbose=True,
 
             llm=llm_model,
-            step_callback=streamlit_callback,
+            # step_callback=streamlit_callback,
             )
 
     def pubmedDataReviewerAgent(self, topic):
@@ -135,5 +111,5 @@ class sotaAgents():
             allow_delegation=False,
             verbose=True,
             llm=llm_model,
-            step_callback=streamlit_callback,
+            # step_callback=streamlit_callback,
             )
