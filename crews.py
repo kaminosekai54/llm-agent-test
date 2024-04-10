@@ -16,7 +16,8 @@ class SotaReviewCrew:
     def __init__(self, topic, streamlit_Log =False):
         self.topic = topic
         self.output_placeholder = ""
-        if streamlit_Log  : self.output_placeholder = st.empty()
+        self.streamlit_Log = streamlit_Log 
+        if self.streamlit_Log : self.output_placeholder = st.empty()
 
     def run(self):
         agents = sotaAgents()
@@ -42,7 +43,7 @@ class SotaReviewCrew:
         )
 
         result = crew.kickoff()
-        if streamlit_Log : self.output_placeholder.markdown(result)
+        if self.streamlit_Log : self.output_placeholder.markdown(result)
         # for raw in pubmed_data_collector_agent.parse_raw() : print(raw)
         # with open("output.txt", "w") as f : f.write(str(pubmed_data_collector_agent.tools_handler.on_tool_use()))
         # with open("output2.txt", "w") as f : f.write(str(pubmed_data_collector_agent.json))

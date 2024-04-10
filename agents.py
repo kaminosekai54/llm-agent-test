@@ -114,7 +114,6 @@ class sotaAgents():
             # step_callback=streamlit_callback,
             )
     
-class sotaAgents():
     def headManagerAgent2(self):
         return Agent(
             role='Head Manager ',
