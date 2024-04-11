@@ -22,15 +22,14 @@ def main():
 
     if st.sidebar.button("Run Review"):
         with st.spinner("🤖 **Agents at work...**"):
-                sota_review_crew = SotaReviewCrew(topic)
-                results = sota_review_crew.run()
-                print(results)
-
-
+            if os.path.isfile("./pubMedResults.csv"): os.remove("./pubMedResults.csv")
+            sota_review_crew = SotaReviewCrew(topic)
+            results = sota_review_crew.run()
+            # print(results)
         st.success("Review Completed!")
 
         if os.path.isfile("pubMedResults.csv"):
-            result = pd.read_csv("pubMedResults.csv", encoding="utf8")
+            result = pd.read_csv("pubMedResults.csv", encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
             st.header("Articles found :")
             st.dataframe(result, hide_index=True)
         else:

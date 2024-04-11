@@ -82,9 +82,9 @@ class sotaAgents():
             backstory=dedent(f"""
                                 You are an expert in the {topic}
                                 You are the best at collecting scientific articles on pubmed. 
-                                You always find the most relevant keywords and identify the most fitting articles. You always provide a well-formatted output, respecting the imposed requirements.You always give a well formated output, respecting the imposed requieredment.
+                                You always find the most relevant keywords and identify the most fitting articles. You always provide a well-formatted output, respecting the imposed requirements.
                                 You always make sure that your data are well formatted.
-                             You only accept articles in french or english and with in a specific date range, if not specified, with in the last 5 years.
+                             You only accept articles in french or english.
                                 """),
                                 tools=[pubmedTool],
 
@@ -129,7 +129,7 @@ class sotaAgents():
                              verbose=True,
                                 tools=[pubmedTool],
                              llm=llm_model,
-                             step_callback=streamlit_callback,
+                            #  step_callback=streamlit_callback,
                              )
     
 
@@ -182,12 +182,11 @@ class sotaAgents():
                                 This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.text
                              Your role is pivotal in streamlining research processes, ensuring only the most pertinent information is accessed.
                                 """ ),
-                                tools=[csvTool],
-
+                                # tools=[csvTool],
             allow_delegation=False,
             verbose=True,
             llm=llm_model,
-            step_callback=streamlit_callback,
+            # step_callback=streamlit_callback,
             )
     
     def pubmedDataResearchAnalystAgent2(self, topic):
@@ -200,10 +199,10 @@ class sotaAgents():
                                 Your role bridges the gap between broad data pools and specific informational needs, ensuring research efforts are efficient.
                              Through your expertise, the process of transforming raw data into actionable intelligence is both streamlined and elevated, making you an invaluable asset to the research initiative.
                                """),
-                               tools=[csvTool],
+                               tools=[pubmedTool],
 
             allow_delegation=False,
             verbose=True,
             llm=llm_model,
-            step_callback=streamlit_callback,
+            # step_callback=streamlit_callback,
             )
