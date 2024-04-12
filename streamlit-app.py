@@ -22,16 +22,16 @@ def main():
 
     if st.sidebar.button("Run Review"):
         with st.spinner("🤖 **Agents at work...**"):
-                sota_review_crew = SotaReviewCrew(topic)
-                results = sota_review_crew.run()
-
+            if os.path.isfile("./pubMedResults.csv"): os.remove("./pubMedResults.csv")
+            sota_review_crew = SotaReviewCrew(topic)
+            results = sota_review_crew.run()
+            # print(results)
         st.success("Review Completed!")
 
         if os.path.isfile("pubMedResults.csv"):
-            result = pd.read_csv("pubMedResults.csv")
+            result = pd.read_csv("pubMedResults.csv", encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
             st.header("Articles found :")
-            #st.dataframe(result)
-
+            #st.dataframe(result, hide_index=True)
             df = result
             # Sidebar for selecting columns and filtering values
             st.sidebar.title('Filter Data')
@@ -58,8 +58,6 @@ def main():
                     file_name='filtered_data.csv',
                     mime='text/csv'
                 )
-
-
         else:
             st.header("Seams an error occured")
 

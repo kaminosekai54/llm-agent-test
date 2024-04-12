@@ -14,13 +14,12 @@ class PubMedArticleSearchTool(BaseTool):
 
     def _run(self, keywords: str) -> str:
         """
-        Executes the PubMed article search with in the 5 last year using the provided list of key words.
-        :param keywords: One string representing keywords, separated by a comma.
-        :return: CSV file representing search results  that should be use as output by any task or agent.
+        Executes the PubMed article search using the provided list of key words.
+        :param keywords: One string representing keywords, separated by a comma. Example is "keyword1, key word2, ...."
+        :return: Json string for the CSV file representing search results  that should be use as output by any task or agent.
         """
         keywords_list = keywords
         if isinstance(keywords, str) : keywords_list = keywords.split(",")
-        # print(type(keywords_list))
         Entrez.email = "Alexis.CULPIN@efor-group.com"  # Set your email
 
         def generate_keyword_combinations(keywords):
@@ -42,9 +41,7 @@ class PubMedArticleSearchTool(BaseTool):
             print(combinations )
 
             for combo in combinations:
-                # query = f"({combo})" 
-                query = f"({combo}) AND ({current_date}[Date - Publication] : {date_minus_5_years}[Date - Publication])"
-
+                query = f"({combo})" 
                 handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
                 record = Entrez.read(handle)
                 id_list = record["IdList"]
@@ -61,7 +58,7 @@ class PubMedArticleSearchTool(BaseTool):
                             all_articles.append(article_data)
 
             return all_articles
-
+        
         # Implement the `extract_article_data` function as previously described
         def extract_article_data(article):
             """Extract required data from a single article, including publication date, authors, type, open access status, and full text availability, with comprehensive checks for missing data."""
@@ -124,15 +121,15 @@ class PubMedArticleSearchTool(BaseTool):
                 open_access_status = "Yes" if pmc_id else "No"
 
                 return {
-                    'Article ID': article_id.encode('utf8'),
-                    'Title': title.encode('utf8'),
-                    'Journal': journal.encode('utf8'),
-                    'Authors': ", ".join(authors).encode('utf8'),
-                    'Publication Date': pub_date.encode('utf8'),
-                    'Article Type': publication_type.encode('utf8'),
-                    'DOI': doi.encode('utf8'),
-                    'Abstract': abstract.encode('utf8'),
-                    'Open Access': open_access_status.encode('utf8'),
+                    'Article ID': article_id.encode('utf8', 'replace'),
+                    'Title': title.encode('utf8', 'replace'),
+                    'Journal': journal.encode('utf8', 'replace'),
+                    'Authors': ", ".join(authors).encode('utf8', 'replace'),
+                    'Publication Date': pub_date.encode('utf8', 'replace'),
+                    'Article Type': publication_type.encode('utf8', 'replace'),
+                    'DOI': doi.encode('utf8', 'replace'),
+                    'Abstract': abstract.encode('utf8', 'replace'),
+                    'Open Access': open_access_status.encode('utf8', 'replace'),
                     'Full Text Available': "Yes" if pmc_id else "No"
                 }
             except Exception as e:
@@ -142,6 +139,5 @@ class PubMedArticleSearchTool(BaseTool):
 
         articles = search_pubmed(keywords_list)
         df = pd.DataFrame.from_dict(articles).drop_duplicates()
-        # if os.path.isfile("./pubMedResults.csv"): df=pd.concat([pd.read_csv("pubMedResults.csv"), df], ignore_index=True).drop_duplicates()
-        df.to_csv("./pubMedResults.csv", sep=",", index=False)
+        if not df.empty : df.to_csv("./pubMedResults.csv", sep=",", index=False, encoding="utf8")
         return df.to_json()
