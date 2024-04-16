@@ -13,10 +13,7 @@ class sotaTasks:
         return Task(
             description=dedent(
                 f"""
-            Collect the most relevant articles to conduct a complete state of the art review.
-            All the differents keywords will be combined during the search.
-            So, give a particular attention to  use the apropriate keywords and date range.
-            Save the results in a csv file called pubMedRes.csv or concatenate the results to the existing csv file
+                Find relevant articles on pubmed.
             {self.__tip_section()}
         """
             ),
@@ -30,8 +27,7 @@ a csv file called pubMedResults.csv containing the following articles meta data 
                 """),
 
             agent=agent,
-            output_file= "./res.txt",
-
+            # output_file= "./res.txt",
         )
 
     def savePubMedData(self, agent, data):
@@ -137,4 +133,24 @@ For example :
                 """),
             agent=agent,
             output_file= "./res.txt",
+        )
+
+    def generateKeywordsTask(self, agent):
+        return Task(
+            description=dedent(
+                f"""
+                generate a list of primary and secondary keywords that are currently used to find articles on the topic, ensuring a blend of broad and specific terms.
+                Also find intresting combinaison of those keywords.
+ 
+            {self.__tip_section()}
+        """
+            ),
+            expected_output = dedent(
+                f"""
+                A string containing a pipe -separated list of keywords relevant to the topic.
+                The format should be as follows: "keyword1 | keyword2 | keyword3 | keywordN".
+                It should contain 5 to 20 key words, including combinaisons if relevant..
+                """),
+ 
+            agent=agent,
         )

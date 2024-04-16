@@ -14,12 +14,14 @@ class PubMedArticleSearchTool(BaseTool):
 
     def _run(self, keywords: str) -> str:
         """
-        Executes the PubMed article search using the provided list of key words.
-        :param keywords: One string representing keywords, separated by a comma. Example is "keyword1, key word2, ...."
-        :return: Json string for the CSV file representing search results  that should be use as output by any task or agent.
-        """
+    Executes a PubMed article search using provided keywords. Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
+    
+    For example, 'cancer treatment|genome|mutation' will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
+    
+    The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
+    """
         keywords_list = keywords
-        if isinstance(keywords, str) : keywords_list = keywords.split(",")
+        if isinstance(keywords, str) : keywords_list = keywords.split("|")
         Entrez.email = "Alexis.CULPIN@efor-group.com"  # Set your email
 
         def generate_keyword_combinations(keywords):
@@ -37,11 +39,11 @@ class PubMedArticleSearchTool(BaseTool):
             current_date = datetime.now().strftime("%Y-%m-%d")
 
             all_articles = []
-            combinations = generate_keyword_combinations(keywords)
-            print(combinations )
-
-            for combo in combinations:
-                query = f"({combo})" 
+            # combinations = generate_keyword_combinations(keywords)
+            # print(combinations )
+            # for combo in combinations:
+            for kw in keywords:
+                query = f"({kw})" 
                 handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
                 record = Entrez.read(handle)
                 id_list = record["IdList"]
@@ -139,5 +141,12 @@ class PubMedArticleSearchTool(BaseTool):
 
         articles = search_pubmed(keywords_list)
         df = pd.DataFrame.from_dict(articles).drop_duplicates()
-        if not df.empty : df.to_csv("./pubMedResults.csv", sep=",", index=False, encoding="utf8")
-        return df.to_json()
+        json_data = df.to_json()
+
+        if not df.empty :
+            df = df.applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
+            df.to_csv("./pubMedResults.csv", sep=",", index=False, encoding="utf8")
+        return json_data
+
+# results = PubMedArticleSearchTool().run("titanium femur implant, orthopedic titanium rod, femoral prosthesis, biocompatible femur replacement, custom femur implant")
+

@@ -6,7 +6,7 @@ from pubmedTool import PubMedArticleSearchTool
 from crewai_tools import CSVSearchTool
 from langchain_openai import AzureChatOpenAI
 from dotenv import load_dotenv
-
+from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
@@ -172,24 +172,23 @@ class sotaAgents():
             step_callback=streamlit_callback,
             )
     
-    def pubmedDataSearcherAgent2(self, topic):
+    def pubmedDataSearcherAgent(self, topic):
         return Agent(
             role='Keyword Discovery Specialist',
             goal=f"Efficiently identify and select potent keywords to optimize the search and retrieval of relevant articles on {topic}.",
             backstory=dedent(f"""
                                 Entrusted as a Keyword Discovery Specialist on {topic}, your adeptness at pinpointing exact keywords revolutionizes the way articles are searched and found.
-                                Your insights derive from a profound understanding of diverse topics, enabling the extraction of the most impactful search terms.text
-                                This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.text
+                                Your insights derive from a profound understanding of diverse topics, enabling the extraction of the most impactful search terms.
+                                This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.
                              Your role is pivotal in streamlining research processes, ensuring only the most pertinent information is accessed.
                                 """ ),
-                                # tools=[csvTool],
             allow_delegation=False,
             verbose=True,
             llm=llm_model,
             # step_callback=streamlit_callback,
             )
     
-    def pubmedDataResearchAnalystAgent2(self, topic):
+    def pubmedDataResearchAnalystAgent(self, topic):
         return Agent(
             role='Strategic Research Analyst',
             goal=f"Leverage expertly selected keywords to conduct deep and comprehensive research, uncovering the most relevant and insightful articles.",
