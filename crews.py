@@ -53,18 +53,18 @@ class SotaReviewCrew:
         return result
 
 
-if __name__ == "__main__":
-    print("## Welcome to State-of-the-Art Review Crew")
-    print('-------------------------------')
+# if __name__ == "__main__":
+#     print("## Welcome to State-of-the-Art Review Crew")
+#     print('-------------------------------')
 
-    topic = input(
-        dedent("""
-            What is the topic for the state-of-the-art review?
-        """))
+#     topic = input(
+#         dedent("""
+#             What is the topic for the state-of-the-art review?
+#         """))
     
-    sota_review_crew = SotaReviewCrew(topic)
-    result = sota_review_crew.run()
-    print("\n\n########################")
-    print("## Here is the Report")
-    print("########################\n")
-    print(result)
+#     sota_review_crew = SotaReviewCrew(topic)
+#     result = sota_review_crew.run()
+#     print("\n\n########################")
+#     print("## Here is the Report")
+#     print("########################\n")
+#     print(result)

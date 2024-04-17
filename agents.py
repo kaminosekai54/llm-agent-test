@@ -3,6 +3,9 @@ import os
 from textwrap import dedent
 from crewai import Agent
 from pubmedTool import PubMedArticleSearchTool
+from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
+
 from crewai_tools import CSVSearchTool
 from langchain_openai import AzureChatOpenAI
 from dotenv import load_dotenv
@@ -10,12 +13,17 @@ from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
-llm_model = AzureChatOpenAI(
-    openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-    azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
-    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-)
-pubmedTool = PubMedArticleSearchTool()
+# llm_model = AzureChatOpenAI(
+    # openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    # azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+# )
+llm_model =ChatGroq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            model="mixtral-8x7b-32768"
+        ) 
+# pubmedTool = PubMedArticleSearchTool()
+pubmedTool = pubMedArticleSearch
 
 
 def streamlit_callback(step_output):
