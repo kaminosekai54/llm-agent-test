@@ -7,9 +7,8 @@ from agents import sotaAgents
 from tasks import sotaTasks
 from crews import SotaReviewCrew
 import warnings
-warnings.filterwarnings('ignore')
+from langchain_community.tools.pubmed.tool import PubmedQueryRun
 
-# Streamlit app starts here
 def main():
     st.set_page_config(layout="wide", page_title="SOTA Review Crew", page_icon=":rocket:")
 
@@ -19,6 +18,9 @@ def main():
     # User input for the topic
     topic = st.sidebar.text_input("Enter the review topic:")
     
+    if st.sidebar.button("Run Pubmed from Langchain"):
+        tool = PubmedQueryRun()
+        print(tool.invoke(topic))
     
 
     if st.sidebar.button("Run Review"):
