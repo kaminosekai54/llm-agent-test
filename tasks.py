@@ -19,11 +19,7 @@ class sotaTasks:
             ),
             expected_output = dedent(
                 f"""
-a csv file called pubMedResults.csv containing the following articles meta data : 
-            ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
-            No report are expected,
-            No comments are expected
-            Only the csv file of the results.
+Yes if the data could be retreaved, no overwise
                 """),
 
             agent=agent,

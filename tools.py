@@ -1,139 +1,114 @@
-from crewai_tools import tool
-from datetime import datetime
-import itertools
-import xmltodict
+from metapub import PubMedFetcher
 import pandas as pd
+from datetime import datetime
+from crewai_tools import tool
 import os
-from Bio import Entrez
+import shutil
+from dotenv import load_dotenv
+from tqdm import tqdm
 
-def generate_keyword_combinations(keywords):
-    """Generate all possible combinations of keywords."""
-    combinations = []
-    for L in range(1, len(keywords) + 1):
-        for subset in itertools.combinations(keywords, L):
-            combinations.append(", ".join(subset))
-
-    print(combinations)
-    return combinations
-
-
-def extract_article_data(article):
-    """Extract required data from a single article, including publication date, authors, type, open access status, and full text availability, with comprehensive checks for missing data."""
-    try:
-        article_id_dict = article['MedlineCitation'].get('PMID', {})
-        article_id = article_id_dict.get('#text', "Not Available") if isinstance(article_id_dict, dict) else str(article_id_dict)
-
-                # Handling title that might be a dictionary
-        raw_title = article.get('MedlineCitation', {}).get('Article', {}).get('ArticleTitle', "Not Available")
-        if isinstance(raw_title, dict):
-            # Assuming '#text' exists and optionally there are other parts marked with keys like 'i'
-            title_parts = [raw_title.get('#text')] + [part for key, part in raw_title.items() if key != '#text' for part in (part if isinstance(part, list) else [part])]
-            title = " ".join(title_parts).strip()
-        else:
-            title = raw_title
-        journal = article.get('MedlineCitation', {}).get('Article', {}).get('Journal', {}).get('Title', "Not Available")
-                
-        # Improved handling for publication date extraction
-        article_date = article['MedlineCitation']['Article'].get('ArticleDate')
-        pub_date = "Not Available"
-        if article_date and isinstance(article_date, list) and len(article_date) > 0:
-            year = article_date[0].get('Year', '')
-            month = article_date[0].get('Month', '01')
-            day = article_date[0].get('Day', '01')
-            pub_date = f"{year}-{month}-{day}"
-        else:
-            journal_issue_date = article['MedlineCitation']['Article']['Journal'].get('JournalIssue', {}).get('PubDate', {})
-            if 'Year' in journal_issue_date:
-                year = journal_issue_date.get('Year', '')
-                month = journal_issue_date.get('Month', '01')
-                day = journal_issue_date.get('Day', '01')
-                pub_date = f"{year}-{month}-{day}"
-
-        publication_type_list = article['MedlineCitation']['Article'].get('PublicationTypeList', {}).get('PublicationType', [])
-        publication_type = ", ".join(ptype['#text'] for ptype in publication_type_list if isinstance(ptype, dict))
-
-        # Handling for DOI and abstract
-        article_ids = article['PubmedData']['ArticleIdList'].get('ArticleId', [])
-        doi = next((aid['#text'] for aid in article_ids if isinstance(aid, dict) and aid.get('@IdType') == 'doi'), "Not Available")
-
-        abstract_texts = article['MedlineCitation']['Article'].get('Abstract', {}).get('AbstractText', [])
-        abstract = "Not Available"
-        if isinstance(abstract_texts, list):
-            abstract = " ".join(part['#text'] if isinstance(part, dict) else part for part in abstract_texts)
-        elif isinstance(abstract_texts, dict):
-            abstract = abstract_texts.get('#text', abstract_texts)
-
-        # Extracting authors
-        author_list = article['MedlineCitation']['Article'].get('AuthorList', {}).get('Author', [])
-        authors = []
-        for author in author_list:
-            if isinstance(author, dict):
-                last_name = author.get('LastName', "")
-                fore_name = author.get('ForeName', "")
-                authors.append(f"{fore_name} {last_name}".strip())
-
-        # Open access and full-text availability
-        pmc_id = next((aid['#text'] for aid in article_ids if isinstance(aid, dict) and aid.get('@IdType') == 'pmc'), None)
-        open_access_status = "Yes" if pmc_id else "No"
-
-        return {
-                'Article ID': article_id.encode('utf8', 'replace'),
-            'Title': title.encode('utf8', 'replace'),
-            'Journal': journal.encode('utf8', 'replace'),
-            'Authors': ", ".join(authors).encode('utf8', 'replace'),
-            'Publication Date': pub_date.encode('utf8', 'replace'),
-            'Article Type': publication_type.encode('utf8', 'replace'),
-            'DOI': doi.encode('utf8', 'replace'),
-            'Abstract': abstract.encode('utf8', 'replace'),
-            'Open Access': open_access_status.encode('utf8', 'replace'),
-            'Full Text Available': "Yes" if pmc_id else "No"
-        }
-    except Exception as e:
-        print(f"Error extracting article data: {e}")
-        return None
-
+load_dotenv()
+os.environ["NCBI_API_KEY"] = "6361fb3062c6904a3bdda0295e65998f0408"
 
 @tool("pubMedArticleSearch")
-def pubMedArticleSearch(data: str) -> str:
+def pubMedArticleSearch(keywords: str) -> str:
     """
     Executes a PubMed article search using provided keywords. Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
-    
     For example, 'cancer treatment|genome|mutation' will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
-    
     The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
     """
-    # Convert keywords string to list if necessary
-    keywords_list = data.split("|") if isinstance(data, str) else data
-    
-    # Set your Entrez email here
-    Entrez.email = "your_email@example.com"
-    date_range_start = (datetime.now() - pd.DateOffset(years=5)).strftime("%Y-%m-%d")
-    date_range_end = datetime.now().strftime("%Y-%m-%d")
-        
-    all_articles = []
-    for kw in keywords_list:
-        query = f"({kw})"
-        handle = Entrez.esearch(db="pubmed", term=query, retmax=5)
-        record = Entrez.read(handle)
-        id_list = record["IdList"]
-            
-        if id_list:
-            handle = Entrez.efetch(db="pubmed", id=id_list, retmode="xml")
-            articles_xml = handle.read()
-            articles_dict = xmltodict.parse(articles_xml)
-            articles = articles_dict.get('PubmedArticleSet', {}).get('PubmedArticle', [])
-            for article in articles:
-                article_data = extract_article_data(article)
-                if article_data:
-                    all_articles.append(article_data)
+    try:
+        # Convert keywords string to list if necessary
+        keywords_list = keywords.split("|") if isinstance(keywords, str) else keywords
 
-    df = pd.DataFrame(articles)
-    if not df.empty: 
-        df.drop_duplicates(inplace=True)
-        json_data = df.to_json(orient='records')
-        df.to_csv("./pubMedResults.csv", index=False)
-        return json_data
-    else:
-        return "No articles found for the given keywords."
+        # Set your Entrez email here
+        PubMedFetcher.email = "alexis.culpin@cri-paris.org"
+        start_date = (datetime.now() - pd.DateOffset(years=5)).strftime("%Y/%m/%d")
+        end_date = datetime.now().strftime("%Y/%m/%d")
+        if os.path.isdir("cachedir"):
+            shutil.rmtree("cachedir")
+        fetcher = PubMedFetcher(cachedir='./cachedir')
+        all_articles = []
+        nb_article_per_keywords = 5
+        for kw in keywords_list:
+            try:
+                search_results = fetcher.pmids_for_query(kw, retmax=nb_article_per_keywords, mindate=start_date, maxdate=end_date)
+                for pmid in tqdm(search_results, desc="Fetching articles"):
+                    try:
+                        article = fetcher.article_by_pmid(pmid)
+                        # Intermediate variables with default values
+                        article_id = "No ID available"
+                        title = "No title available"
+                        journal = "No journal available"
+                        authors = "No authors listed"
+                        pub_date = "Not Available"
+                        article_type = "Article type "
+                        doi = "No doi found"
+                        abstract = "No abstract available"
+                        # Try to retrieve attribute values
+                        try:
+                            article_id = getattr(article, 'pmid', 'No ID available')
+                        except Exception as e:
+                            print(f"Error while retrieving article ID for PMID {pmid}: {e}")
 
+                        try:
+                            title = getattr(article, 'title', 'No title available')
+                        except Exception as e:
+                            print(f"Error while retrieving title for PMID {pmid}: {e}")
 
+                        try:
+                            journal = getattr(article, 'journal', 'No journal available')
+                        except Exception as e:
+                            print(f"Error while retrieving journal for PMID {pmid}: {e}")
+
+                        try:
+                            authors = ", ".join(article.authors) if article.authors else "No authors listed"
+                        except Exception as e:
+                            print(f"Error while retrieving authors for PMID {pmid}: {e}")
+
+                        try:
+                            pub_date = article.history['pubmed'].strftime("%Y-%m-%d") if article.history.get('pubmed') else "Not Available"
+                        except Exception as e:
+                            print(f"Error while retrieving publication date for PMID {pmid}: {e}")
+
+                        try:
+                            article_type = getattr(article, 'pubmed_type', 'Article type ')
+                        except Exception as e:
+                            print(f"Error while retrieving article type for PMID {pmid}: {e}")
+
+                        try:
+                            doi = article.doi
+                        except Exception as e:
+                            print(f"Error while retrieving DOI for PMID {pmid}: {e}")
+
+                        try:
+                            abstract = getattr(article, 'abstract', 'No abstract available')
+                        except Exception as e:
+                            print(f"Error while retrieving abstract for PMID {pmid}: {e}")
+
+                        # Construct article data dictionary
+                        article_data = {
+                            'Article ID': article_id,
+                            'Title': title,
+                            'Journal': journal,
+                            'Authors': authors,
+                            'Publication Date': pub_date,
+                            'Article Type': article_type,
+                            'DOI': doi,
+                            'Abstract': abstract,
+                        }
+                        all_articles.append(article_data)
+                    except Exception as e:
+                        print(f"Error while fetching article data for PMID {pmid}: {e}")
+            except Exception as e:
+                print(f"Error while querying PubMed for keyword '{kw}': {e}")
+
+        df = pd.DataFrame(all_articles)
+        if not df.empty:
+            df.drop_duplicates(inplace=True)
+            df.to_csv("./pubMedResults.csv", sep=",", index=False)
+            return "CSV created"
+        else:
+            return "No articles found for the given keywords."
+    except Exception as e:
+        return f"An error occurred: {e}"
