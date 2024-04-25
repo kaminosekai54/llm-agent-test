@@ -91,8 +91,6 @@ def main():
                     file_name='filtered_data.csv',
                     mime='text/csv'
                 )
-            # else:
-                # st.header("Seems an error occurred")
 
 if __name__ == "__main__":
     if os.path.isdir("__pycache__"): 
