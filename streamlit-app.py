@@ -20,7 +20,8 @@ def display_filters(df, selected_columns):
     if 'Publication Date' in selected_columns:
         min_date = pd.to_datetime(df['Publication Date']).min().to_pydatetime()
         max_date = pd.to_datetime(df['Publication Date']).max().to_pydatetime()
-        date_range = st.sidebar.slider("Filter by Publication Date", min_value=min_date, max_value=max_date, value=(min_date, max_date))
+        # date_range = st.sidebar.slider("Filter by Publication Date", min_value=min_date, max_value=max_date, value=(min_date, max_date))
+        date_range = st.sidebar.date_input("Filter by Publication Date", value=(min_date, max_date), min_value=min_date, max_value=max_date)
 
     # Filter by title
     if 'Title' in selected_columns:
@@ -29,17 +30,18 @@ def display_filters(df, selected_columns):
     # Filter by abstract
     if 'Abstract' in selected_columns:
         abstract_keyword = st.sidebar.text_input("Search by Abstract Keyword")
+        if abstract_keyword:
+            filtered_df = df[df['Abstract'].str.contains(abstract_keyword, case=False, na=False)]
+        else:
+            filtered_df = df.copy()
 
     # Apply filters
-    filtered_df = df.copy()
     if 'Authors' in selected_columns and selected_authors:
         filtered_df = filtered_df[filtered_df['Authors'].apply(lambda x: any(author.strip() in selected_authors for author in x.split(',')))]
     if 'Publication Date' in selected_columns and date_range:
         filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(date_range[0])) & (pd.to_datetime(filtered_df['Publication Date']) <= pd.Timestamp(date_range[1]))]
     if 'Title' in selected_columns and title_keyword:
-        filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False)]
-    if 'Abstract' in selected_columns and abstract_keyword:
-        filtered_df = filtered_df[filtered_df['Abstract'].str.contains(abstract_keyword, case=False)]
+        filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False, na=False)]
 
     return filtered_df
 
