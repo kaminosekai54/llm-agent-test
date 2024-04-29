@@ -11,18 +11,29 @@ This tutorial guides you through the process of setting up a Conda environment, 
 
 ## Step 2: Create a Conda Environment
 
+### Option A: Create Manually
+
 1. Press the Windows button and search for "Anaconda Prompt" to open the Anaconda Prompt application.
 2. In the Anaconda Prompt, create a new Conda environment by typing:
     ```
     conda create -n crewAI
     ```
-3. For more information on managing Conda environments, refer to the [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html).
-4. Accept the installation prompts and wait for the environment creation process to complete.
-5. To activate your newly created environment, type:
+3. Accept the installation prompts and wait for the environment creation process to complete.
+4. To activate your newly created environment, type:
     ```
     conda activate crewAI
     ```
    If you have chosen a different name for your environment, replace `crewAI` with the name of your environment.
+
+### Option B: Create from `.yml` File
+
+1. Ensure you have a `.yml` file that defines the environment setup. This file typically includes the environment name, dependencies, and potentially other configurations.
+2. To create and activate the environment from the `.yml` file, use the following commands in the Anaconda Prompt:
+    ```
+    conda env create -f env.yml
+    conda activate crewAI
+    ```
+   Replace `environment.yml` with the path to your `.yml` file. The environment name inside the `.yml` file will be used automatically.
 
 ## Step 3: Install Required Packages
 
@@ -37,7 +48,9 @@ pip install xmltodict
 pip install langchain_community
 ```
 
-## Step 4: Download and Install Ollama
+If you installed the environment with the yml file, this step can be ignored.
+
+## Step 4: Download and Install Ollama (if you are using ollama, other wise, skip this step)
 
 1. Navigate to the [Ollama download page](https://ollama.com/download) and click on the Windows version to start the download.
 2. Once downloaded, go to your download folder and double-click on the Ollama installer.
@@ -67,9 +80,7 @@ This command downloads and runs the Mistrale model from Ollama's servers. Press 
     ```
 4. Finally, run the Streamlit application by typing:
     ```
-    streamlit run test-streamlit.py
+    streamlit run streamlit-app.py
     ```
 
 If everything is set up correctly, the application should run without issues.
-# llm-agent-test
-Just for testing for now
