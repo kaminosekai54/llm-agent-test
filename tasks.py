@@ -9,11 +9,13 @@ class sotaTasks:
     def __tip_section(self):
         return "If you do your BEST WORK, I'll give you a $10,000 commission ! and you will help to save the world !"
 
-    def getPubMedData(self, agent):
+    def getPubMedData(self, agent, start_date, end_date):
         return Task(
             description=dedent(
                 f"""
-                Find relevant articles on pubmed.
+                Find relevant articles on pubmed in the following date range :
+                start_date = {start_date}
+end_date = {end_date}
             {self.__tip_section()}
         """
             ),

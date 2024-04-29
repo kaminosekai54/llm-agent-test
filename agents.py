@@ -13,17 +13,17 @@ from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
-llm_model = AzureChatOpenAI(
-    openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-    azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
-    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-)
-# llm_model =ChatGroq(
-            # api_key=os.getenv("GROQ_API_KEY"),
-            # model="mixtral-8x7b-32768"
+# llm_model = AzureChatOpenAI(
+    # openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    # azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+# )
+llm_model =ChatGroq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            model="mixtral-8x7b-32768"
             # model="llama2-70b-4096"
             # model="llama3-70b-8192"
-        # ) 
+        ) 
 pubmedTool = pubMedArticleSearch
 
 
