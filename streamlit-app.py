@@ -2,6 +2,7 @@ import os
 import shutil
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 from crews import SotaReviewCrew
 import warnings
 
@@ -10,6 +11,7 @@ warnings.filterwarnings('ignore')
 # Function to display the sidebar filters based on selected columns
 def display_filters(df, selected_columns):
     st.sidebar.title('Filter Data')
+    filtered_df = df.copy()
 
     # Filter by authors
     if 'Authors' in selected_columns:
@@ -18,30 +20,30 @@ def display_filters(df, selected_columns):
 
     # Filter by publication date
     if 'Publication Date' in selected_columns:
-        min_date = pd.to_datetime(df['Publication Date']).min().to_pydatetime()
-        max_date = pd.to_datetime(df['Publication Date']).max().to_pydatetime()
-        # date_range = st.sidebar.slider("Filter by Publication Date", min_value=min_date, max_value=max_date, value=(min_date, max_date))
-        date_range = st.sidebar.date_input("Filter by Publication Date", value=(min_date, max_date), min_value=min_date, max_value=max_date)
+        min_date = pd.to_datetime(df['Publication Date']).min().date()
+        max_date = pd.to_datetime(df['Publication Date']).max().date()
+        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date)
+        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date)
+
+        # Filter based on selected date range
+        filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(selected_min_date)) & 
+                                  (pd.to_datetime(filtered_df['Publication Date']) <= pd.Timestamp(selected_max_date))]
 
     # Filter by title
     if 'Title' in selected_columns:
         title_keyword = st.sidebar.text_input("Search by Title Keyword")
+        if title_keyword:
+            filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False, na=False)]
 
     # Filter by abstract
     if 'Abstract' in selected_columns:
         abstract_keyword = st.sidebar.text_input("Search by Abstract Keyword")
         if abstract_keyword:
-            filtered_df = df[df['Abstract'].str.contains(abstract_keyword, case=False, na=False)]
-        else:
-            filtered_df = df.copy()
+            filtered_df = filtered_df[filtered_df['Abstract'].str.contains(abstract_keyword, case=False, na=False)]
 
-    # Apply filters
+    # Apply author filters last to make sure other filters are considered first
     if 'Authors' in selected_columns and selected_authors:
         filtered_df = filtered_df[filtered_df['Authors'].apply(lambda x: any(author.strip() in selected_authors for author in x.split(',')))]
-    if 'Publication Date' in selected_columns and date_range:
-        filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(date_range[0])) & (pd.to_datetime(filtered_df['Publication Date']) <= pd.Timestamp(date_range[1]))]
-    if 'Title' in selected_columns and title_keyword:
-        filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False, na=False)]
 
     return filtered_df
 
@@ -58,11 +60,15 @@ def main():
     
     # User input for the topic
     topic = st.sidebar.text_input("Enter the review topic:")
+    start_date = (datetime.now() - pd.DateOffset(years=5))
+    end_date = datetime.now()
+    selected_min_date_for_search = st.sidebar.date_input("Select Minimum Publication Date", max_value=end_date, value=start_date )
+    selected_max_date_for_search  = st.sidebar.date_input("Select Maximum Publication Date", min_value=selected_min_date_for_search, max_value=end_date, value=end_date)
     
     if st.sidebar.button("Run Review"):
         with st.spinner("🤖 **Agents at work...**"):
             if os.path.isfile("./pubMedResults.csv"): os.remove("./pubMedResults.csv")
-            sota_review_crew = SotaReviewCrew(topic)
+            sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
             results = sota_review_crew.run()
         st.success("Review Completed!")
 
