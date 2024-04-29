@@ -38,7 +38,7 @@ def pubMedArticleSearch(keywords: str, start_date : str, end_date : str ) -> str
         nb_article_per_keywords = 5
         for kw in keywords_list:
             try:
-                search_results = fetcher.pmids_for_query(kw, retmax=nb_article_per_keywords, mindate=start_date, maxdate=end_date )
+                search_results = fetcher.pmids_for_query(kw, retmax=nb_article_per_keywords, since=datetime.strptime(start_date, "%d/%m/%Y").strftime("%Y/%m/%d"), until=datetime.strptime(end_date, "%d/%m/%Y").strftime("%Y/%m/%d"))
                 for pmid in tqdm(search_results, desc="Fetching articles"):
                     try:
                         article = fetcher.article_by_pmid(pmid)
@@ -73,7 +73,7 @@ def pubMedArticleSearch(keywords: str, start_date : str, end_date : str ) -> str
                             print(f"Error while retrieving authors for PMID {pmid}: {e}")
 
                         try:
-                            pub_date = article.history['pubmed'].strftime("%Y-%m-%d") if article.history.get('pubmed') else "Not Available"
+                            pub_date = article.history['pubmed'].strftime("%d/%m/%Y") if article.history.get('pubmed') else "Not Available"
                         except Exception as e:
                             print(f"Error while retrieving publication date for PMID {pmid}: {e}")
 

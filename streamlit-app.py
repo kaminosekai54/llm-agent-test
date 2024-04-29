@@ -22,8 +22,8 @@ def display_filters(df, selected_columns):
     if 'Publication Date' in selected_columns:
         min_date = pd.to_datetime(df['Publication Date']).min().date()
         max_date = pd.to_datetime(df['Publication Date']).max().date()
-        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date)
-        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date)
+        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", value=min_date, format="DD/MM/YYYY")
+        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", value=max_date, format="DD/MM/YYYY")
 
         # Filter based on selected date range
         filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(selected_min_date)) & 
@@ -62,8 +62,8 @@ def main():
     topic = st.sidebar.text_input("Enter the review topic:")
     start_date = (datetime.now() - pd.DateOffset(years=5))
     end_date = datetime.now()
-    selected_min_date_for_search = st.sidebar.date_input("Select Minimum Publication Date", max_value=end_date, value=start_date )
-    selected_max_date_for_search  = st.sidebar.date_input("Select Maximum Publication Date", min_value=selected_min_date_for_search, max_value=end_date, value=end_date)
+    selected_min_date_for_search = st.sidebar.date_input("Select Minimum Publication Date", max_value=end_date, value=start_date , format="DD/MM/YYYY")
+    selected_max_date_for_search  = st.sidebar.date_input("Select Maximum Publication Date", min_value=selected_min_date_for_search, max_value=end_date, value=end_date, format="DD/MM/YYYY")
     
     if st.sidebar.button("Run Review"):
         with st.spinner("🤖 **Agents at work...**"):
