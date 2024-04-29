@@ -22,8 +22,8 @@ def display_filters(df, selected_columns):
     if 'Publication Date' in selected_columns:
         min_date = pd.to_datetime(df['Publication Date']).min().date()
         max_date = pd.to_datetime(df['Publication Date']).max().date()
-        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", value=min_date, format="DD/MM/YYYY")
-        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", value=max_date, format="DD/MM/YYYY")
+        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date, format="DD/MM/YYYY")
+        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date, format="DD/MM/YYYY")
 
         # Filter based on selected date range
         filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(selected_min_date)) & 
