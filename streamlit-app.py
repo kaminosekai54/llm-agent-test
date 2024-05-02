@@ -8,6 +8,16 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
+@ st.cache_data # Cache the processed dataframe
+def preprocess_data(filepath):
+    """
+    Preprocesses the dataframe by converting date columns and ensuring correct types for other columns.
+    """
+    df = pd.read_csv(filepath, encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
+    df['Publication Date'] = pd.to_datetime(df['Publication Date'].replace("Not Available", pd.NaT), errors='coerce')
+    df['Authors'] = df['Authors'].astype(str)
+    return df
+
 # Function to display the sidebar filters based on selected columns
 def display_filters(df, selected_columns):
     st.sidebar.title('Filter Data')
@@ -15,35 +25,18 @@ def display_filters(df, selected_columns):
 
     # Filter by authors
     if 'Authors' in selected_columns:
-        unique_authors = set(author.strip() for authors in df['Authors'].str.split(',') for author in authors)
-        selected_authors = st.sidebar.multiselect('Filter by Authors', list(unique_authors))
+        try:
+            all_authors = df['Authors'].dropna().apply(lambda x: [author.strip() for author in x.split(',')])
+            unique_authors = sorted(set([author for sublist in all_authors for author in sublist]))
 
-    # Filter by publication date
-    if 'Publication Date' in selected_columns:
-        min_date = pd.to_datetime(df['Publication Date']).min().date()
-        max_date = pd.to_datetime(df['Publication Date']).max().date()
-        selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date, format="DD/MM/YYYY")
-        selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date, format="DD/MM/YYYY")
+            # unique_authors = set(author.strip().lower() for authors in df['Authors'].str.split(',') for author in authors if author.strip())
+        except Exception as e:
+            st.sidebar.error(f"Error processing authors: {e}")
+            unique_authors = []
+        selected_authors = st.sidebar.multiselect('Filter by Authors', sorted(list(unique_authors)))
 
-        # Filter based on selected date range
-        filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(selected_min_date)) & 
-                                  (pd.to_datetime(filtered_df['Publication Date']) <= pd.Timestamp(selected_max_date))]
-
-    # Filter by title
-    if 'Title' in selected_columns:
-        title_keyword = st.sidebar.text_input("Search by Title Keyword")
-        if title_keyword:
-            filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False, na=False)]
-
-    # Filter by abstract
-    if 'Abstract' in selected_columns:
-        abstract_keyword = st.sidebar.text_input("Search by Abstract Keyword")
-        if abstract_keyword:
-            filtered_df = filtered_df[filtered_df['Abstract'].str.contains(abstract_keyword, case=False, na=False)]
-
-    # Apply author filters last to make sure other filters are considered first
-    if 'Authors' in selected_columns and selected_authors:
-        filtered_df = filtered_df[filtered_df['Authors'].apply(lambda x: any(author.strip() in selected_authors for author in x.split(',')))]
+        if selected_authors: 
+            filtered_df = filtered_df[filtered_df['Authors'].apply(lambda x: any(author.strip() in selected_authors for author in x.split(',')))]
 
     return filtered_df
 
@@ -73,12 +66,13 @@ def main():
         st.success("Review Completed!")
 
     if os.path.isfile("pubMedResults.csv"):
-        result = pd.read_csv("pubMedResults.csv", encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
+        # result = pd.read_csv("pubMedResults.csv", encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
         
         # Preprocess 'Publication Date' column
-        result['Publication Date'] = result['Publication Date'].replace("Not Available", pd.NaT)
+        # result['Publication Date'] = result['Publication Date'].replace("Not Available", pd.NaT)
         
-        df = result
+        df = preprocess_data("pubMedResults.csv")
+
 
         # Multiselect to choose columns to display
         selected_columns = st.sidebar.multiselect("Select Columns to Display", df.columns, default=df.columns.tolist())
