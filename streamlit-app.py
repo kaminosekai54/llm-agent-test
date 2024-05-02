@@ -14,7 +14,9 @@ def preprocess_data(filepath):
     Preprocesses the dataframe by converting date columns and ensuring correct types for other columns.
     """
     df = pd.read_csv(filepath, encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
+    df['Publication Date'] = pd.to_datetime(df['Publication Date'].replace("Not Available", pd.NaT), errors='coerce').dt.strftime('%d/%m/%Y')
     df['Publication Date'] = pd.to_datetime(df['Publication Date'].replace("Not Available", pd.NaT), errors='coerce')
+
     df['Authors'] = df['Authors'].astype(str)
     return df
 
@@ -37,6 +39,30 @@ def display_filters(df, selected_columns):
 
         if selected_authors: 
             filtered_df = filtered_df[filtered_df['Authors'].apply(lambda x: any(author.strip() in selected_authors for author in x.split(',')))]
+
+    # Filter by publication date
+    if 'Publication Date' in selected_columns:
+        try:
+            min_date = pd.to_datetime(df['Publication Date']).min().date()
+            max_date = pd.to_datetime(df['Publication Date']).max().date()
+            selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date, format="DD/MM/YYYY")
+            selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date, format="DD/MM/YYYY")
+            filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date']) >= pd.Timestamp(selected_min_date)) & 
+                                  (pd.to_datetime(filtered_df['Publication Date']) <= pd.Timestamp(selected_max_date))]
+        except Exception as e:
+            st.sidebar.error(f"Error processing dates: {e}")
+
+    # Filter by title
+    if 'Title' in selected_columns:
+        title_keyword = st.sidebar.text_input("Search by Title Keyword")
+        if title_keyword:
+            filtered_df = filtered_df[filtered_df['Title'].str.contains(title_keyword, case=False, na=False)]
+
+    # Filter by abstract
+    if 'Abstract' in selected_columns:
+        abstract_keyword = st.sidebar.text_input("Search by Abstract Keyword")
+        if abstract_keyword:
+            filtered_df = filtered_df[filtered_df['Abstract'].str.contains(abstract_keyword, case=False, na=False)]
 
     return filtered_df
 
