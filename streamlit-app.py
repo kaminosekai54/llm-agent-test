@@ -15,7 +15,7 @@ def preprocess_data(filepath):
     """
     df = pd.read_csv(filepath, encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
     # df['Publication Date'] = pd.to_datetime(df['Publication Date'].replace("Not Available", pd.NaT), errors='coerce', format="%d/%m/%Y")
-
+    df['Publication Date'] = df['Publication Date'].replace("Not Available", pd.NaT)
     df['Authors'] = df['Authors'].astype(str)
     df['Article ID'] = df['Article ID'].replace(",", "")
 
@@ -48,13 +48,17 @@ def display_filters(df, selected_columns):
 
     # Filter by publication date
     if 'Publication Date' in selected_columns:
+        print("in date filtering")
         try:
-            min_date = pd.to_datetime(df['Publication Date'], format='%d/%m/%Y').min().date()
-            max_date = pd.to_datetime(df['Publication Date'], format='%d/%m/%Y').max().date()
+            print("before min date")
+            min_date = pd.to_datetime(df['Publication Date'], dayfirst=True).min().date()
+            print(min_date)
+            max_date = pd.to_datetime(df['Publication Date'], dayfirst=True).max().date()
+            print(max_date)
             selected_min_date = st.sidebar.date_input("Select Minimum Publication Date", min_value=min_date, max_value=max_date, value=min_date, format="DD/MM/YYYY")
             selected_max_date = st.sidebar.date_input("Select Maximum Publication Date", min_value=min_date, max_value=max_date, value=max_date, format="DD/MM/YYYY")
-            filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date'], format='%d/%m/%Y') >= pd.Timestamp(selected_min_date)) & 
-                                  (pd.to_datetime(filtered_df['Publication Date'], format='%d/%m/%Y') <= pd.Timestamp(selected_max_date))]
+            filtered_df = filtered_df[(pd.to_datetime(filtered_df['Publication Date'], dayfirst=True) >= pd.Timestamp(selected_min_date)) & 
+                                  (pd.to_datetime(filtered_df['Publication Date'], dayfirst=True) <= pd.Timestamp(selected_max_date))]
         except Exception as e:
             st.sidebar.error(f"Error processing dates: {e}")
 
