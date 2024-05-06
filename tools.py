@@ -79,7 +79,7 @@ def fetch_article_data(pmid):
 
         # Construct article data dictionary
         article_data = {
-            'Article ID': article_id,
+            'Article ID': article_id.replace(",", ""),
             'Title': title,
             'Journal': journal,
             'Authors': authors,
