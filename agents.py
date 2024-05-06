@@ -15,12 +15,12 @@ from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
-llm_model =ChatGroq(
-            api_key=os.getenv("GROQ_API_KEY"),
-            model="mixtral-8x7b-32768"
+# llm_model =ChatGroq(
+            # api_key=os.getenv("GROQ_API_KEY"),
+            # model="mixtral-8x7b-32768"
             # model="llama2-70b-4096"
             # model="llama3-70b-8192"
-        ) 
+        # ) 
 pubmedTool = pubMedArticleSearch
 
 def getLLMModel(modelName):
