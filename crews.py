@@ -26,7 +26,6 @@ class SotaReviewCrew:
         head_manager_agent = agents.headManagerAgent()
         pubmed_keywords_searcher= agents.pubmedDataSearcherAgent(self.topic)
         pubmed_data_collector_agent = agents.pubmedDataCollectorAgent(self.topic)
-        # pubmed_data_reviewer_agent = agents.pubmedDataReviewerAgent(topic)
 
         # defind task to be executed
         get_keywords_task= tasks.generateKeywordsTask(pubmed_keywords_searcher)
