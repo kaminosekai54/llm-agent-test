@@ -105,6 +105,8 @@ def main():
     if st.sidebar.button("Run Review"):
         with st.spinner("🤖 **Agents at work...**"):
             if os.path.isfile("./pubMedResults.csv"): os.remove("./pubMedResults.csv")
+            print(selected_min_date_for_search.strftime("%d/%m/%Y"))
+            print(selected_max_date_for_search.strftime("%d/%m/%Y"))
             sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
             results = sota_review_crew.run()
         st.success("Review Completed!")
@@ -138,5 +140,5 @@ def main():
 
 if __name__ == "__main__":
     if os.path.isdir("__pycache__"): 
-        shutil.rmtree("__pycache__")
+        if os.path.isdir("__pycache__"): shutil.rmtree("__pycache__")
     main()

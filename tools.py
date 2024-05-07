@@ -160,7 +160,6 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
         start_datetime = datetime.strptime(startDate, "%d/%m/%Y")
         end_datetime = datetime.strptime(endDate, "%d/%m/%Y")
 
-
         # Set your Entrez email here
         PubMedFetcher.email = "alexis.culpin@cri-paris.org"
         PubMedFetcher.API_KEY=os.getenv("NCBI_API_KEY")
@@ -181,27 +180,32 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
                     # search_results.extend(fetcher.pmids_for_query(kw, retmax=nb_article_pear_year , since=f"{year}/01/01", until=f"{year}/12/31"))
                     # if len(search_results) < MAX_CALLS_PER_SECOND : continue
                 # search_results = fetcher.pmids_for_query(kw, retmax=nb_article_per_keywords, since=datetime.strptime(startDate, "%d/%m/%Y").strftime("%Y/%m/%d"), until=datetime.strptime(endDate, "%d/%m/%Y").strftime("%Y/%m/%d"))
-                with ThreadPoolExecutor() as executor:
-                    futures = [executor.submit(fetch_article_data, pmid) for pmid in search_results]
-                    for future in tqdm(as_completed(futures), total=len(futures), desc="Fetching articles"):
-                        article_data = future.result()
-                        if article_data:
-                            article_pub_date = datetime.strptime(article_data["Publication Date"], "%d/%m/%Y") if article_data["Publication Date"] != "Not Available" else 0
-                            if article_pub_date != 0 and (article_pub_date >= start_datetime and article_pub_date <= end_datetime):
-                                # for key in article_data.keys():
-                                    # article_data[key] = BeautifulSoup(article_data[key], "html.parser").get_text()
-                                all_articles.append(article_data)
-                        # search_results = []
+                try:
+                    with ThreadPoolExecutor() as executor:
+                        futures = [executor.submit(fetch_article_data, pmid) for pmid in search_results]
+                        for future in tqdm(as_completed(futures), total=len(futures), desc="Fetching articles"):
+                            try:
+                                article_data = future.result()
+                                if article_data:
+                                    pub_date = article_data.get("Publication Date")
+                                    if pub_date != "Not Available":
+                                        article_pub_date = datetime.strptime(pub_date, "%d/%m/%Y")
+                                        if start_datetime <= article_pub_date <= end_datetime:
+                                            all_articles.append(article_data)
+                            except Exception as data_error:
+                                print(f"Error processing data for PMID: {data_error}")
+                except Exception as exc:
+                    print(f"Error fetching data for keyword '{kw}': {exc}")
     
         print("the all process took : ", time.time() - t1)
         df = pd.DataFrame(all_articles)
         if not df.empty:
             df.drop_duplicates(inplace=True)
             df.to_csv("./pubMedResults.csv", sep=",", index=False)
+            print(  pd.to_datetime(df["Publication Date"]).dt.year.value_counts().to_dict())
+
             return "CSV created"
         else:
             return "No articles found for the given keywords."
     except Exception as e:
         return f"An error occurred: {e}"
-
-# print(help(PubMedFetcher(cachedir='./cachedir').pmids_for_query))
