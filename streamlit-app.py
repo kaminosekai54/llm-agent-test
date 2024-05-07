@@ -8,7 +8,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-@ st.cache_data # Cache the processed dataframe
+# @ st.cache_data # Cache the processed dataframe
 def preprocess_data(filepath):
     """
     Preprocesses the dataframe by converting date columns and ensuring correct types for other columns.
