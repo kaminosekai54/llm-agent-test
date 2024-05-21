@@ -214,7 +214,7 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
             df.to_csv(f"searchResults/{fileName }.csv", sep=",", index=False)
             print(  pd.to_datetime(df["Publication Date"]).dt.year.value_counts().to_dict())
 
-            return "CSV created"
+            return fileName
         else:
             return "No articles found for the given keywords."
     except Exception as e:

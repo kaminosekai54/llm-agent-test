@@ -21,7 +21,7 @@ end_date = {end_date}
             ),
             expected_output = dedent(
                 f"""
-Yes if the data could be retreaved, no overwise
+                File path of the created csv file, no overwise
                 """),
 
             agent=agent,
