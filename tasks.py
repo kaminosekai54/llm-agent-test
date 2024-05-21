@@ -28,26 +28,6 @@ Yes if the data could be retreaved, no overwise
             # output_file= "./res.txt",
         )
 
-    def savePubMedData(self, agent, data):
-        return Task(
-            description=dedent(
-                f"""
-                Using the following data :
-                {data}
-            Save the results of the pubmed search results in a csv file called pubMedResults.csv.
-            If the file already exist, concat the new data to the existing file and save it.
-            {self.__tip_section()}
-        """
-            ),
-            expected_output = dedent(
-                f"""
-Only a csv file called pubMedResults.csv containing the following articles meta data : 
-            ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
-                """),
-
-            agent=agent,
-        )
-
 
     def applyFirstFilter(self, agent, topic, context):
         return Task(

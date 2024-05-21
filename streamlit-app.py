@@ -94,6 +94,45 @@ def main():
     st.set_page_config(layout="wide", page_title="SOTA Review Crew", page_icon=":rocket:")
     st.title("State-of-the-Art Review Crew")
     st.sidebar.header("Configuration")
+
+    # Custom CSS for the top-right button
+    st.markdown(
+        """
+        <style>
+        .top-right-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+    # Load CSV Button
+    uploaded_file = st.file_uploader("", type="csv", label_visibility='collapsed', key='top_right_csv')
+    st.markdown('<div class="top-right-button">Load CSV</div>', unsafe_allow_html=True)
+
+    if uploaded_file is not None:
+        df = preprocess_data(uploaded_file)
+
+        # Multiselect to choose columns to display
+        selected_columns = st.sidebar.multiselect("Select Columns to Display", df.columns, default=df.columns.tolist())
+
+        # Display selected columns
+        if selected_columns:
+            filtered_df = display_filters(df, selected_columns)
+            display_selected_columns(filtered_df, selected_columns)
+
+            # Export filtered data
+            if st.button('Export Filtered Data'):
+                csv = filtered_df.to_csv(index=False)
+                st.download_button(
+                    label='Download CSV',
+                    data=csv,
+                    file_name='filtered_data.csv',
+                    mime='text/csv'
+                )
     
     # User input for the topic
     topic = st.sidebar.text_input("Enter the review topic:")

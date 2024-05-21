@@ -153,6 +153,7 @@ class sotaAgents():
             backstory=dedent(f"""
                                 Entrusted as a Keyword Discovery Specialist on {topic}, your adeptness at pinpointing exact keywords revolutionizes the way articles are searched and found.
                                 Your insights derive from a profound understanding of diverse topics, enabling the extraction of the most impactful search terms.
+                                Be careful to not be to generalist, stay close to the specific topic.
                                 This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.
                              Your role is pivotal in streamlining research processes, ensuring only the most pertinent information is accessed.
                                 """ ),

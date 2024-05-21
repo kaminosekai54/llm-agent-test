@@ -200,8 +200,18 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
         print("the all process took : ", time.time() - t1)
         df = pd.DataFrame(all_articles)
         if not df.empty:
+            if not os.path.isdir("searchResults/") : os.mkdir("searchResults/")
             df.drop_duplicates(inplace=True)
-            df.to_csv("./pubMedResults.csv", sep=",", index=False)
+            fileName = f"pubmedResults_{keywords_list[0].replace(' ', '-')}"
+            if fileName in os.listdir("searchResults/"):
+                for i in range(1000):
+                    nFileName= fileName + f"_{i}"
+                    if not nFileName in os.listdir("searchResults/"):
+                        fileName = nFileName
+                        break
+
+
+            df.to_csv(f"searchResults/{fileName }.csv", sep=",", index=False)
             print(  pd.to_datetime(df["Publication Date"]).dt.year.value_counts().to_dict())
 
             return "CSV created"
