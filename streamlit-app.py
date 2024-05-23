@@ -150,22 +150,18 @@ def main():
             sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
             results = sota_review_crew.run()
         st.success("Review Completed!")
-
-    if os.path.isfile("pubMedResults.csv"):
-        # result = pd.read_csv("pubMedResults.csv", encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
-        
-        # Preprocess 'Publication Date' column
-        # result['Publication Date'] = result['Publication Date'].replace("Not Available", pd.NaT)
-        
-        df = preprocess_data("pubMedResults.csv")
+        fileList = sorted([file for file in os.listdir("searchResults/") if topic.replace(" ", "-") in file])
+        if len(fileList) > 0:
+            # Preprocess 'Publication Date' column
+            df = preprocess_data(f"searchResults/{fileList[-1]}")
 
 
-        # Multiselect to choose columns to display
-        selected_columns = st.sidebar.multiselect("Select Columns to Display", df.columns, default=df.columns.tolist())
+            # Multiselect to choose columns to display
+            selected_columns = st.sidebar.multiselect("Select Columns to Display", df.columns, default=df.columns.tolist())
 
-        # Display selected columns
-        if selected_columns:
-            filtered_df = display_filters(df, selected_columns)
+            # Display selected columns
+            if selected_columns:
+                filtered_df = display_filters(df, selected_columns)
             display_selected_columns(filtered_df, selected_columns)
 
             # Export filtered data

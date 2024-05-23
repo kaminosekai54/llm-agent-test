@@ -1,5 +1,5 @@
 from metapub import PubMedFetcher
-from bs4 import BeautifulSoup
+from crewai_tools import BaseTool
 import pandas as pd
 from datetime import datetime
 from crewai_tools import tool
@@ -7,6 +7,7 @@ import os
 import math
 import shutil
 from dotenv import load_dotenv
+from pydantic.config import ConfigDict
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from cachetools import cached, TTLCache
@@ -219,3 +220,30 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
             return "No articles found for the given keywords."
     except Exception as e:
         return f"An error occurred: {e}"
+    
+
+# class PubMedArticleSearchTool(BaseTool):
+#     name: str = "PubMed Article Search"
+#     description: str = """
+#         Executes a PubMed article search using provided keywords with in the specified date range. 
+#         Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
+#         startDate and endDate should be given in the dd/mm/yyyy format.
+#         For example, 'cancer treatment|genome|mutation', 01/01/2019, 01/01/2024 will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
+#         The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
+#             """
+#     return_direct : bool = True
+#     # def __init__(self):
+#         # super().__init__()
+#         # print(dir(self))
+#         # self.return_direct = True
+
+
+#     def _run(self, keywords: str, startDate : str, endDate : str) -> str:
+#         """
+#         Executes a PubMed article search using provided keywords with in the specified date range. 
+#         Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
+#         startDate and endDate should be given in the dd/mm/yyyy format.
+#         For example, 'cancer treatment|genome|mutation', 01/01/2019, 01/01/2024 will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
+#         The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
+#         """
+#         return runPubMedArticleSearch(keywords, startDate, endDate)

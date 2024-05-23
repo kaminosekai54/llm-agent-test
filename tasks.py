@@ -113,11 +113,11 @@ For example :
             output_file= "./res.txt",
         )
 
-    def generateKeywordsTask(self, agent):
+    def generateKeywordsTask(self, agent, topic):
         return Task(
             description=dedent(
                 f"""
-                generate a list of primary and secondary keywords that are currently used to find articles on the topic, ensuring a blend of broad and specific terms.
+                generate a list of primary and secondary keywords that are currently used to find articles on {topic}, ensuring a blend of specific terms.
                 Also find intresting combinaison of those keywords.
  
             {self.__tip_section()}
@@ -125,8 +125,9 @@ For example :
             ),
             expected_output = dedent(
                 f"""
-                A string containing a pipe -separated list of keywords relevant to the topic.
-                The format should be as follows: "keyword1 | keyword2 | keyword3 | keywordN".
+                A string containing a pipe -separated list of keywords.
+                First keywords should be {topic}
+                The format should be as follows: "{topic} | keyword2 | keyword3 | keywordN".
                 It should contain 5 to 20 key words, including combinaisons if relevant..
                 """),
  
