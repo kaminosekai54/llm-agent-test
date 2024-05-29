@@ -13,12 +13,41 @@ def preprocess_data(filepath):
     """
     Preprocesses the dataframe by converting date columns and ensuring correct types for other columns.
     """
-    df = pd.read_csv(filepath, encoding="utf8").applymap(lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x)
-    # df['Publication Date'] = pd.to_datetime(df['Publication Date'].replace("Not Available", pd.NaT), errors='coerce', format="%d/%m/%Y")
-    df['Publication Date'] = df['Publication Date'].replace("Not Available", pd.NaT)
-    df['Authors'] = df['Authors'].astype(str)
-    df['Article ID'] = df['Article ID'].replace(",", "")
-
+    try:
+        df = pd.read_csv(filepath, encoding="utf8").applymap(
+            lambda x: x.decode('utf-8', 'replace') if isinstance(x, bytes) else x
+        )
+    except FileNotFoundError:
+        print(f"Error: The file at {filepath} was not found.")
+        return pd.DataFrame()
+    except pd.errors.ParserError:
+        print(f"Error: Could not parse the file at {filepath}.")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"An unexpected error occurred while reading the file: {e}")
+        return pd.DataFrame()
+    
+    try:
+        df['Publication Date'] = df['Publication Date'].replace("Not Available", pd.NaT)
+    except KeyError:
+        print("Error: 'Publication Date' column is missing in the dataframe.")
+    except Exception as e:
+        print(f"An unexpected error occurred while processing 'Publication Date': {e}")
+    
+    try:
+        df['Authors'] = df['Authors'].astype(str)
+    except KeyError:
+        print("Error: 'Authors' column is missing in the dataframe.")
+    except Exception as e:
+        print(f"An unexpected error occurred while processing 'Authors': {e}")
+    
+    try:
+        df['Article ID'] = df['Article ID'].replace(",", "")
+    except KeyError:
+        print("Error: 'Article ID' column is missing in the dataframe.")
+    except Exception as e:
+        print(f"An unexpected error occurred while processing 'Article ID': {e}")
+    
     return df
 
 # Function to display the sidebar filters based on selected columns
@@ -152,9 +181,7 @@ def main():
         st.success("Review Completed!")
         fileList = sorted([file for file in os.listdir("searchResults/") if topic.replace(" ", "-") in file])
         if len(fileList) > 0:
-            # Preprocess 'Publication Date' column
             df = preprocess_data(f"searchResults/{fileList[-1]}")
-
 
             # Multiselect to choose columns to display
             selected_columns = st.sidebar.multiselect("Select Columns to Display", df.columns, default=df.columns.tolist())

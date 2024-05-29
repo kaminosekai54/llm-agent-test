@@ -172,15 +172,9 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
         nb_article_pear_year = math.ceil((end_datetime.year - start_datetime.year) / nb_article_per_keywords)
         if nb_article_pear_year  <= 0 : nb_article_pear_year  = nb_article_per_keywords
 
-        # allIds = []
         t1 = time.time()
-        # search_results  = []
         for kw in keywords_list:
                 search_results = fetch_article_ids(kw, start_datetime.year, end_datetime.year, nb_article_pear_year)
-                # for year in range(start_datetime.year, end_datetime.year + 1):
-                    # search_results.extend(fetcher.pmids_for_query(kw, retmax=nb_article_pear_year , since=f"{year}/01/01", until=f"{year}/12/31"))
-                    # if len(search_results) < MAX_CALLS_PER_SECOND : continue
-                # search_results = fetcher.pmids_for_query(kw, retmax=nb_article_per_keywords, since=datetime.strptime(startDate, "%d/%m/%Y").strftime("%Y/%m/%d"), until=datetime.strptime(endDate, "%d/%m/%Y").strftime("%Y/%m/%d"))
                 try:
                     with ThreadPoolExecutor() as executor:
                         futures = [executor.submit(fetch_article_data, pmid) for pmid in search_results]
@@ -203,47 +197,30 @@ def pubMedArticleSearch(keywords: str, startDate : str, endDate : str ) -> str:
         if not df.empty:
             if not os.path.isdir("searchResults/") : os.mkdir("searchResults/")
             df.drop_duplicates(inplace=True)
-            fileName = f"pubmedResults_{keywords_list[0].replace(' ', '-')}"
+            # print(os.listdir("searchResults/"))
+            fileName = f"pubmedResults_{keywords_list[0].replace(' ', '-')}.csv"
             if fileName in os.listdir("searchResults/"):
-                for i in range(1000):
-                    nFileName= fileName + f"_{i}"
+                print(fileName)
+                print(os.listdir("searchResults/"))
+                for i in range(1, 1001, 1):
+                    nFileName= fileName[:len(fileName)-4] + f"_{i}.csv"
+                    print("tmp file name : ", nFileName)
                     if not nFileName in os.listdir("searchResults/"):
+                        print("found new name : ", nFileName)
                         fileName = nFileName
                         break
 
 
-            df.to_csv(f"searchResults/{fileName }.csv", sep=",", index=False)
-            print(  pd.to_datetime(df["Publication Date"]).dt.year.value_counts().to_dict())
+            df.to_csv(f"searchResults/{fileName }", sep=",", index=False)
+            print(fileName)
+            # print(  pd.to_datetime(df["Publication Date"]).dt.year.value_counts().to_dict())
 
             return fileName
         else:
             return "No articles found for the given keywords."
     except Exception as e:
+        print("error occured in the tool in the main function")
         return f"An error occurred: {e}"
     
 
-# class PubMedArticleSearchTool(BaseTool):
-#     name: str = "PubMed Article Search"
-#     description: str = """
-#         Executes a PubMed article search using provided keywords with in the specified date range. 
-#         Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
-#         startDate and endDate should be given in the dd/mm/yyyy format.
-#         For example, 'cancer treatment|genome|mutation', 01/01/2019, 01/01/2024 will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
-#         The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
-#             """
-#     return_direct : bool = True
-#     # def __init__(self):
-#         # super().__init__()
-#         # print(dir(self))
-#         # self.return_direct = True
-
-
-#     def _run(self, keywords: str, startDate : str, endDate : str) -> str:
-#         """
-#         Executes a PubMed article search using provided keywords with in the specified date range. 
-#         Keywords should be provided as a pipe (|) separated string, representing each keyword or phrase.
-#         startDate and endDate should be given in the dd/mm/yyyy format.
-#         For example, 'cancer treatment|genome|mutation', 01/01/2019, 01/01/2024 will search articles related to 'cancer treatment', 'genome', and 'mutation' from the last 5 years.
-#         The function compiles results into a string that represents a DataFrame of search results, including details like article ID, title, journal, authors, publication date, and more.
-#         """
-#         return runPubMedArticleSearch(keywords, startDate, endDate)
+# pubMedArticleSearch(keywords="blood cells|hematology|erythrocytes|leukocytes|platelets|blood cell development|blood cell disorders|hematopoiesis|blood cell transplantation|red blood cells|white blood cells|blood cell morphology|blood cell functions|blood cell diseases|blood cell therapies|stem cells|hematopoietic stem cells|blood cell biology", startDate= "01/05/2019", endDate= "01/05/2024")
