@@ -1,26 +1,24 @@
-import streamlit as st
 import os
 from textwrap import dedent
 from crewai import Agent
-from pubmedTool import PubMedArticleSearchTool
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 import config
 
 configs = config.getConfigs()
-from crewai_tools import CSVSearchTool
 from langchain_openai import AzureChatOpenAI
 from dotenv import load_dotenv
+# from tools import PubMedArticleSearchTool
 from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
-llm_model =ChatGroq(
-            api_key=os.getenv("GROQ_API_KEY"),
-            model="mixtral-8x7b-32768"
+# llm_model =ChatGroq(
+            # api_key=os.getenv("GROQ_API_KEY"),
+            # model="mixtral-8x7b-32768"
             # model="llama2-70b-4096"
             # model="llama3-70b-8192"
-        ) 
+        # ) 
 pubmedTool = pubMedArticleSearch
 
 def getLLMModel(modelName):
@@ -153,6 +151,7 @@ class sotaAgents():
             backstory=dedent(f"""
                                 Entrusted as a Keyword Discovery Specialist on {topic}, your adeptness at pinpointing exact keywords revolutionizes the way articles are searched and found.
                                 Your insights derive from a profound understanding of diverse topics, enabling the extraction of the most impactful search terms.
+                                Be careful to not be to generalist, stay close to the specific topic.
                                 This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.
                              Your role is pivotal in streamlining research processes, ensuring only the most pertinent information is accessed.
                                 """ ),

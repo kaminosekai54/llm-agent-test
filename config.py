@@ -7,13 +7,14 @@ configs["agents"] = {
 },
 "pubmedDataCollectorAgent":
 {
-"model":"mixtrale_groq",
+"model":"llama3_groq",
 },
 
 "pubmedDataSearcherAgent":
 {
 "model":"llama3_groq",
 },
-} 
+}
+
 def getConfigs():
     return configs

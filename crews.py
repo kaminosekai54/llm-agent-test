@@ -28,7 +28,7 @@ class SotaReviewCrew:
         pubmed_data_collector_agent = agents.pubmedDataCollectorAgent(self.topic)
 
         # defind task to be executed
-        get_keywords_task= tasks.generateKeywordsTask(pubmed_keywords_searcher)
+        get_keywords_task= tasks.generateKeywordsTask(pubmed_keywords_searcher, self.topic)
         get_pubmed_data_task = tasks.getPubMedData(pubmed_data_collector_agent, self.start_date, self.end_date) 
         # apply_first_filter_task = tasks.applyFirstFilter2(agent=pubmed_data_reviewer_agent, topic=topic, data=pd.read_csv("pubMedResults.csv").to_json())
 
