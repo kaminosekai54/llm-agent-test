@@ -179,8 +179,9 @@ def main():
             try:
                 sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
                 results = sota_review_crew.run()
-            except RateLimitError:
-                st.error("Rate limit exceeded. Please try again later.")
+            # except RateLimitError:
+                # st.error("Rate limit exceeded. Please try again later.")
+
             except Exception as e:
                 st.error(f"An unexpected error occurred while running the review: {e}")
         st.success("Review Completed!")
