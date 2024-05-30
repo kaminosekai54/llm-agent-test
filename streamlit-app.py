@@ -176,8 +176,13 @@ def main():
             print("topic choose :", topic)
             print(selected_min_date_for_search.strftime("%d/%m/%Y"))
             print(selected_max_date_for_search.strftime("%d/%m/%Y"))
-            sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
-            results = sota_review_crew.run()
+            try:
+                sota_review_crew = SotaReviewCrew(topic, start_date=selected_min_date_for_search.strftime("%d/%m/%Y"), end_date=selected_max_date_for_search.strftime("%d/%m/%Y"))
+                results = sota_review_crew.run()
+            except RateLimitError:
+                st.error("Rate limit exceeded. Please try again later.")
+            except Exception as e:
+                st.error(f"An unexpected error occurred while running the review: {e}")
         st.success("Review Completed!")
         fileList = sorted([file for file in os.listdir("searchResults/") if topic.replace(" ", "-") in file])
         if len(fileList) > 0:
@@ -200,6 +205,8 @@ def main():
                     file_name='filtered_data.csv',
                     mime='text/csv'
                 )
+        else :
+            st.error("Csv file couldn't be displayed, please use the import button to choose it, or run the review again")
 
 if __name__ == "__main__":
     if os.path.isdir("__pycache__"): 
