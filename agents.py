@@ -1,30 +1,50 @@
-import streamlit as st
 import os
 from textwrap import dedent
 from crewai import Agent
-from pubmedTool import PubMedArticleSearchTool
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
+import config
 
-from crewai_tools import CSVSearchTool
+configs = config.getConfigs()
 from langchain_openai import AzureChatOpenAI
 from dotenv import load_dotenv
+# from tools import PubMedArticleSearchTool
 from tools import pubMedArticleSearch
 #  env variables    
 load_dotenv()
  
-# llm_model = AzureChatOpenAI(
-    # openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
-    # azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
-    # azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
-# )
-llm_model =ChatGroq(
-            api_key=os.getenv("GROQ_API_KEY"),
-            model="mixtral-8x7b-32768"
+# llm_model =ChatGroq(
+            # api_key=os.getenv("GROQ_API_KEY"),
+            # model="mixtral-8x7b-32768"
             # model="llama2-70b-4096"
             # model="llama3-70b-8192"
-        ) 
+        # ) 
 pubmedTool = pubMedArticleSearch
+
+def getLLMModel(modelName):
+    llm_model = "not defind"
+    if modelName == "llama3_groq":
+        llm_model =ChatGroq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            model="llama3-70b-8192"
+        )
+    elif modelName == "mixtrale_groq" :
+        llm_model =ChatGroq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            model="mixtral-8x7b-32768"
+        )
+
+    elif modelName == "azure_gpt4":
+        llm_model = AzureChatOpenAI(
+    openai_api_version=os.environ.get("AZURE_OPENAI_VERSION"),
+    azure_deployment=os.environ.get("AZURE_OPENAI_DEPLOYMENT"),
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+)
+    
+    return llm_model
+
+
+
 
 
 def streamlit_callback(step_output):
@@ -79,7 +99,8 @@ class sotaAgents():
                              allow_delegation=True,
                              verbose=True,
                                 tools=[pubmedTool],
-                             llm=llm_model,
+            llm=getLLMModel(configs["agents"]["headManagerAgent"]["model"]),
+
                             #  step_callback=streamlit_callback,
                              )
     
@@ -100,29 +121,11 @@ class sotaAgents():
             allow_delegation=False,
 
             verbose=True,
+            llm=getLLMModel(configs["agents"]["pubmedDataCollectorAgent"]["model"]),
 
-            llm=llm_model,
             # step_callback=streamlit_callback,
             )
 
-    def pubmedDataReviewerAgent(self, topic):
-        return Agent(
-            role='Experience data reviewer',
-            goal=f"Review the collected data on {topic}",
-            backstory=dedent(f"""
-                                You are an expert in the {topic}.
-                                You are the best at evaluating if an article fit a topic or not and is relevant to use for a state of the art report. 
-                                You always review carefully the each data before deciding to keep it or not.
-                             You only accept articles in french or english and with in a specific date range, if not specified, with in the last 5 years.
-                                """),
-                                tools=[csvTool],
-
-            allow_delegation=False,
-            verbose=True,
-            llm=llm_model,
-            # step_callback=streamlit_callback,
-            )
-    
     def headManagerAgent2(self):
         return Agent(
             role='Head Manager ',
@@ -137,49 +140,9 @@ class sotaAgents():
                              allow_delegation=True,
                              verbose=True,
                                 tools=[pubmedTool],
-                             llm=llm_model,
+            llm=getLLMModel(configs["agents"]["headManagerAgent2"]["model"]),
                             #  step_callback=streamlit_callback,
                              )
-    
-
-    def pubmedDataCollectorAgent2(self, topic):
-        return Agent(
-            role='Strategic Insight Gatherer',
-            goal=f"Select the optimal keywords to conduct a comprehensive review of the current state of the art of {topic}",
-            backstory=dedent(f"""
-                                You are an expert in {topic}, known for your unparalleled ability to navigate PubMed for scientific literature.
-                                Your skill in selecting the most relevant keywords ensures you always identify the articles that matter.
-                                Precision in formatting means your outputs consistently meets the highest standards.
-                                You specialize in articles in French or English, focusing on works from the last five years unless otherwise specified.
-                             Your commitment to quality and relevance in data collection sets you appart in the field.
-                                """),
-                                tools=[pubmedTool],
-
-            allow_delegation=False,
-
-            verbose=True,
-
-            llm=llm_model,
-            step_callback=streamlit_callback,
-            )
-
-    def pubmedDataReviewerAgent2(self, topic):
-        return Agent(
-            role='Comprehensive Data Evaluation Expert',
-            goal=f"Critically analyze and validate gathered data on {topic} to ensure its accuracy, relevance, and contribution to knowledge enhancement.",
-            backstory=dedent(f"""
-                                As an authority on {topic}, your expertise shines in identifying articles that precisely match the thematic requirements for cutting-edge research compilations.
-                                With a discerning eye, you meticulously evaluate each piece of data, ensuring its utmost relevance and reliability before inclusion. 
-                                Your preference for articles in French or English, coupled with a steadfast focus on works published within the most recent five year period, underscores your commitment to contemporary relevance.
-                             This methodical approach solidifies your status as a beacon of excellence in data verification and selection.
-                                """),
-                                tools=[csvTool],
-
-            allow_delegation=False,
-            verbose=True,
-            llm=llm_model,
-            step_callback=streamlit_callback,
-            )
     
     def pubmedDataSearcherAgent(self, topic):
         return Agent(
@@ -188,29 +151,13 @@ class sotaAgents():
             backstory=dedent(f"""
                                 Entrusted as a Keyword Discovery Specialist on {topic}, your adeptness at pinpointing exact keywords revolutionizes the way articles are searched and found.
                                 Your insights derive from a profound understanding of diverse topics, enabling the extraction of the most impactful search terms.
+                                Be careful to not be to generalist, stay close to the specific topic.
                                 This skill not only enhances search efficiency but also elevates the relevance of the retrieved articles.
                              Your role is pivotal in streamlining research processes, ensuring only the most pertinent information is accessed.
                                 """ ),
             allow_delegation=False,
             verbose=True,
-            llm=llm_model,
+            llm=getLLMModel(configs["agents"]["pubmedDataSearcherAgent"]["model"]),
             # step_callback=streamlit_callback,
             )
-    
-    def pubmedDataResearchAnalystAgent(self, topic):
-        return Agent(
-            role='Strategic Research Analyst',
-            goal=f"Leverage expertly selected keywords to conduct deep and comprehensive research, uncovering the most relevant and insightful articles.",
-            backstory=dedent(f"""
-                                As a Strategic Research Analyst on {topic}, you wield the power of meticulously chosen keywords to navigate vast information, unearthing articles that are gems of knowledge and insight.
-                                Your methodology is refined, drawing on the precision work of your predecessor, the Keyword Discovery Specialist, to target your searches with unparalleled accuracy.
-                                Your role bridges the gap between broad data pools and specific informational needs, ensuring research efforts are efficient.
-                             Through your expertise, the process of transforming raw data into actionable intelligence is both streamlined and elevated, making you an invaluable asset to the research initiative.
-                               """),
-                               tools=[pubmedTool],
-
-            allow_delegation=False,
-            verbose=True,
-            llm=llm_model,
-            # step_callback=streamlit_callback,
-            )
+ 

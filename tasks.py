@@ -21,31 +21,12 @@ end_date = {end_date}
             ),
             expected_output = dedent(
                 f"""
-Yes if the data could be retreaved, no overwise
+                Yes if the csv file is created, no overwise.
+                Cut Finish the process after the first data retreaval.
                 """),
 
             agent=agent,
             # output_file= "./res.txt",
-        )
-
-    def savePubMedData(self, agent, data):
-        return Task(
-            description=dedent(
-                f"""
-                Using the following data :
-                {data}
-            Save the results of the pubmed search results in a csv file called pubMedResults.csv.
-            If the file already exist, concat the new data to the existing file and save it.
-            {self.__tip_section()}
-        """
-            ),
-            expected_output = dedent(
-                f"""
-Only a csv file called pubMedResults.csv containing the following articles meta data : 
-            ArticleID, Title, Journal, Authors, PublicationDate, ArticleType, DOI, Abstract, OpenAccess, FullTextAvailable
-                """),
-
-            agent=agent,
         )
 
 
@@ -133,11 +114,11 @@ For example :
             output_file= "./res.txt",
         )
 
-    def generateKeywordsTask(self, agent):
+    def generateKeywordsTask(self, agent, topic):
         return Task(
             description=dedent(
                 f"""
-                generate a list of primary and secondary keywords that are currently used to find articles on the topic, ensuring a blend of broad and specific terms.
+                generate a list of primary and secondary keywords that are currently used to find articles on {topic}, ensuring a blend of specific terms.
                 Also find intresting combinaison of those keywords.
  
             {self.__tip_section()}
@@ -145,8 +126,9 @@ For example :
             ),
             expected_output = dedent(
                 f"""
-                A string containing a pipe -separated list of keywords relevant to the topic.
-                The format should be as follows: "keyword1 | keyword2 | keyword3 | keywordN".
+                A string containing a pipe -separated list of keywords.
+                First keywords should be {topic}
+                The format should be as follows: "{topic} | keyword2 | keyword3 | keywordN".
                 It should contain 5 to 20 key words, including combinaisons if relevant..
                 """),
  
