@@ -6,3 +6,4 @@ langchain_groq
 langchain_openai 
 ratelimit
 lxml_html_clean
+pysqlite3
