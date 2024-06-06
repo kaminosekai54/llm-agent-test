@@ -1,7 +1,7 @@
 from crewai import Task
 from textwrap import dedent
-from pubmedTool import PubMedArticleSearchTool
-pubmedTool = PubMedArticleSearchTool()
+# from pubmedTool import PubMedArticleSearchTool
+# pubmedTool = PubMedArticleSearchTool()
 
 
 
