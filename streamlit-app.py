@@ -32,6 +32,7 @@ def preprocess_data(filepath):
     
     try:
         df['Publication Date'] = df['Publication Date'].replace("Not Available", pd.NaT)
+        df['Publication Date']  = pd.to_datetime(df['Publication Date'], format='%d/%m/%Y').dt.date 
     except KeyError:
         print("Error: 'Publication Date' column is missing in the dataframe.")
     except Exception as e:
