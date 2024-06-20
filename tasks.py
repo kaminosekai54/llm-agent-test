@@ -114,15 +114,15 @@ For example :
             output_file= "./res.txt",
         )
 
-    def generateKeywordsTask(self, agent, topic):
+    def generateKeywordsTask(self, agent, topic, feedback=None):
         return Task(
             description=dedent(
                 f"""
                 generate a list of primary and secondary keywords that are currently used to find articles on {topic}, ensuring a blend of specific terms.
                 Also find intresting combinaison of those keywords.
- 
-            {self.__tip_section()}
         """
+        if feedback != None :
+            description += f"consider the following feedback : {feedback}"
             ),
             expected_output = dedent(
                 f"""
